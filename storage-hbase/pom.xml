@@ -40,6 +40,11 @@
             <artifactId>kylin-engine-mr</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kylin</groupId>
+            <artifactId>kylin-invertedindex</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- Env & Test -->
         <dependency>

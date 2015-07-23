@@ -28,7 +28,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-import org.apache.kylin.job.constant.BatchConstants;
+import org.apache.kylin.engine.mr.common.BatchConstants;
 import org.apache.kylin.job.hadoop.invertedindex.RandomKeyDistributionReducer;
 import org.junit.Before;
 import org.junit.Test;

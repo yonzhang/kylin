@@ -29,8 +29,8 @@ import org.apache.hadoop.util.ToolRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.apache.kylin.common.util.LocalFileMetadataTestCase;
+import org.apache.kylin.engine.mr.steps.MergeCuboidJob;
 
 /**
  * @author ysong1

@@ -39,6 +39,7 @@ import org.apache.kylin.dict.DictionaryGenerator;
 import org.apache.kylin.dict.DictionaryInfo;
 import org.apache.kylin.dict.DictionaryManager;
 import org.apache.kylin.dict.TrieDictionary;
+import org.apache.kylin.engine.mr.steps.MergeCuboidMapper;
 import org.apache.kylin.metadata.MetadataManager;
 import org.apache.kylin.metadata.model.DataType;
 import org.apache.kylin.metadata.model.TblColRef;

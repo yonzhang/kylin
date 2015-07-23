@@ -31,8 +31,8 @@ import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import org.apache.kylin.job.constant.BatchConstants;
+import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.storage.hbase.steps.CubeHFileMapper;
 
 /**
  * @author George Song (ysong1)

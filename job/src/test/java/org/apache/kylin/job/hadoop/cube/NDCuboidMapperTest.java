@@ -20,18 +20,22 @@ package org.apache.kylin.job.hadoop.cube;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.apache.kylin.common.util.Bytes;
 import org.apache.kylin.common.util.LocalFileMetadataTestCase;
-import org.apache.kylin.job.constant.BatchConstants;
+import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.engine.mr.steps.CuboidReducer;
+import org.apache.kylin.engine.mr.steps.NDCuboidMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;

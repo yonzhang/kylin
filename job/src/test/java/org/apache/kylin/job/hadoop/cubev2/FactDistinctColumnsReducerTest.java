@@ -7,7 +7,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.kylin.common.hll.HyperLogLogPlusCounter;
 import org.apache.kylin.engine.mr.HadoopUtil;
-import org.apache.kylin.job.hadoop.cube.FactDistinctColumnsReducer;
+import org.apache.kylin.engine.mr.steps.FactDistinctColumnsReducer;
 import org.junit.Test;
 
 import java.io.IOException;

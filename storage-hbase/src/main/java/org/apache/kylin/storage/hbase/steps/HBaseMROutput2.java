@@ -170,6 +170,7 @@ public class HBaseMROutput2 implements IMROutput2 {
                 scans.add(scan);
             }
             TableMapReduceUtil.initTableMapperJob(scans, (Class<? extends TableMapper>) mapper, outputKeyClass, outputValueClass, job);
+            TableMapReduceUtil.initCredentials(job);
         }
 
         @Override

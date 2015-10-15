@@ -51,6 +51,12 @@ public class StreamingCLI {
 
     public static void main(String[] args) {
         try {
+            System.out.println("hi");
+            logger.info("In StreamingCLI");
+            for (String arg : args) {
+                logger.info(arg);
+            }
+
             AbstractRestCache.setCacheUpdater(new RemoteCacheUpdater());
 
             Preconditions.checkArgument(args[0].equals("streaming"));
@@ -91,6 +97,7 @@ public class StreamingCLI {
             logger.info("streaming process stop, exit with 0");
             System.exit(0);
         } catch (Exception e) {
+            e.printStackTrace();
             printArgsError(args);
             logger.error("error start streaming", e);
             System.exit(-1);

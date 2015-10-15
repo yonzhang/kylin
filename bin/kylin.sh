@@ -91,11 +91,6 @@ then
     fi
     if [ $2 == "start" ]
     then
-        useSandbox=`sh ${dir}/get-properties.sh kylin.sandbox`
-        spring_profile="default"
-        if [ "$useSandbox" = "true" ]
-            then spring_profile="sandbox"
-        fi
 
         #retrive $hive_dependency and $hbase_dependency
         source ${dir}/find-hive-dependency.sh
@@ -110,11 +105,9 @@ then
 
         # KYLIN_EXTRA_START_OPTS is for customized settings, checkout bin/setenv.sh
         hbase ${KYLIN_EXTRA_START_OPTS} \
-        -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
-        -Dorg.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH=true \
         -Dkylin.hive.dependency=${hive_dependency} \
         -Dkylin.hbase.dependency=${hbase_dependency} \
-        -Dspring.profiles.active=${spring_profile} \
+        -Dlog4j.configuration=kylinlog4j.properties \
         org.apache.kylin.job.streaming.StreamingCLI $@ > ${KYLIN_HOME}/logs/streaming_$3_$4.log 2>&1 & echo $! > ${KYLIN_HOME}/logs/$3_$4 &
         echo "streaming started name: $3 id: $4"
         exit 0

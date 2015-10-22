@@ -18,17 +18,15 @@ import org.apache.kylin.gridtable.IGTComparator;
 import org.apache.kylin.metadata.measure.MeasureAggregator;
 import org.apache.kylin.metadata.measure.serializer.DataTypeSerializer;
 import org.apache.kylin.metadata.measure.serializer.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Created by shaoshi on 3/23/15.
- * This implementation uses Dictionary to encode and decode the table; If a column doesn't have dictionary, will check
- * its data type to serialize/deserialize it;
+ * defines how column values will be encoded to/ decoded from GTRecord 
+ * 
+ * Cube meta can provide which columns are dictionary encoded (dict encoded dimensions) or fixed length encoded (fixed length dimensions)
+ * Metrics columns are more flexible, they will use DataTypeSerializer according to their data type.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CubeCodeSystem implements IGTCodeSystem {
-    private static final Logger logger = LoggerFactory.getLogger(CubeCodeSystem.class);
 
     // ============================================================================
 
@@ -113,7 +111,7 @@ public class CubeCodeSystem implements IGTCodeSystem {
         if (serializer instanceof DictionarySerializer) {
             ((DictionarySerializer) serializer).serializeWithRounding(value, roundingFlag, buf);
         } else {
-            if ((!(serializer instanceof StringSerializer || serializer instanceof FixLenSerializer)) && (value instanceof String)) {
+            if ((value instanceof String) && (!(serializer instanceof StringSerializer || serializer instanceof FixLenSerializer))) {
                 value = serializer.valueOf((String) value);
             }
             serializer.serialize(value, buf);

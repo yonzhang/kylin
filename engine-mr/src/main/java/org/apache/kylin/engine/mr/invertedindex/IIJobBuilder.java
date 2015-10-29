@@ -16,7 +16,7 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.job.invertedindex;
+package org.apache.kylin.engine.mr.invertedindex;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -30,12 +30,6 @@ import org.apache.kylin.invertedindex.model.IIJoinedFlatTableDesc;
 import org.apache.kylin.job.constant.ExecutableConstants;
 import org.apache.kylin.job.engine.JobEngineConfig;
 import org.apache.kylin.job.execution.AbstractExecutable;
-import org.apache.kylin.job.hadoop.dict.CreateInvertedIndexDictionaryJob;
-import org.apache.kylin.job.hadoop.invertedindex.IIBulkLoadJob;
-import org.apache.kylin.job.hadoop.invertedindex.IICreateHFileJob;
-import org.apache.kylin.job.hadoop.invertedindex.IICreateHTableJob;
-import org.apache.kylin.job.hadoop.invertedindex.IIDistinctColumnsJob;
-import org.apache.kylin.job.hadoop.invertedindex.InvertedIndexJob;
 import org.apache.kylin.metadata.model.DataModelDesc.RealizationCapacity;
 import org.apache.kylin.source.hive.HiveMRInput.BatchCubingInputSide;
 

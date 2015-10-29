@@ -16,7 +16,7 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.job.invertedindex;
+package org.apache.kylin.engine.mr.invertedindex;
 
 import org.apache.kylin.job.execution.DefaultChainedExecutable;
 

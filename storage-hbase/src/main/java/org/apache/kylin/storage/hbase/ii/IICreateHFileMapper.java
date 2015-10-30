@@ -16,7 +16,7 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.engine.mr.invertedindex;
+package org.apache.kylin.storage.hbase.ii;
 
 import java.io.IOException;
 

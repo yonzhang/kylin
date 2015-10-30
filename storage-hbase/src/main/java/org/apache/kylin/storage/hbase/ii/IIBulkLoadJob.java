@@ -16,7 +16,7 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.engine.mr.invertedindex;
+package org.apache.kylin.storage.hbase.ii;
 
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.fs.FileSystem;
@@ -48,22 +48,12 @@ public class IIBulkLoadJob extends AbstractHadoopJob {
 
             String tableName = getOptionValue(OPTION_HTABLE_NAME);
             String input = getOptionValue(OPTION_INPUT_PATH);
-            String iiname = getOptionValue(OPTION_II_NAME);
 
             FileSystem fs = FileSystem.get(getConf());
             FsPermission permission = new FsPermission((short) 0777);
             fs.setPermission(new Path(input, IIDesc.HBASE_FAMILY), permission);
 
-            int hbaseExitCode = ToolRunner.run(new LoadIncrementalHFiles(getConf()), new String[] { input, tableName });
-
-            IIManager mgr = IIManager.getInstance(KylinConfig.getInstanceFromEnv());
-            IIInstance ii = mgr.getII(iiname);
-            IISegment seg = ii.getFirstSegment();
-            seg.setStorageLocationIdentifier(tableName);
-            seg.setStatus(SegmentStatusEnum.READY);
-            mgr.updateII(ii);
-
-            return hbaseExitCode;
+            return ToolRunner.run(new LoadIncrementalHFiles(getConf()), new String[] { input, tableName });
 
         } catch (Exception e) {
             printUsage(options);

@@ -29,15 +29,18 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.engine.mr.HadoopUtil;
+import org.apache.kylin.engine.mr.IMRInput;
+import org.apache.kylin.engine.mr.MRUtil;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
 import org.apache.kylin.engine.mr.common.BatchConstants;
 import org.apache.kylin.invertedindex.IIInstance;
 import org.apache.kylin.invertedindex.IIManager;
+import org.apache.kylin.invertedindex.IISegment;
 import org.apache.kylin.invertedindex.model.IIJoinedFlatTableDesc;
 import org.apache.kylin.metadata.model.IntermediateColumnDesc;
+import org.apache.kylin.metadata.model.SegmentStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +77,8 @@ public class IIDistinctColumnsJob extends AbstractHadoopJob {
 
             setJobClasspath(job);
 
-            setupMapper();
+            
+            setupMapper(ii.getFirstSegment());
             setupReducer(output);
 
             return waitForCompletion(job);
@@ -97,16 +101,10 @@ public class IIDistinctColumnsJob extends AbstractHadoopJob {
         return buf.toString();
     }
 
-    private void setupMapper() throws IOException {
-
-        String tableName = job.getConfiguration().get(BatchConstants.TABLE_NAME);
-        String[] dbTableNames = HadoopUtil.parseHiveTableName(tableName);
-
-        logger.info("setting hcat input format, db name {} , table name {}", dbTableNames[0], dbTableNames[1]);
-
-        HCatInputFormat.setInput(job, dbTableNames[0], dbTableNames[1]);
-
-        job.setInputFormatClass(HCatInputFormat.class);
+    private void setupMapper(IISegment segment) throws IOException {
+        
+        IMRInput.IMRTableInputFormat flatTableInputFormat = MRUtil.getBatchCubingInputSide(segment).getFlatTableInputFormat();
+        flatTableInputFormat.configureJob(job);
 
         job.setMapperClass(IIDistinctColumnsMapper.class);
         job.setCombinerClass(IIDistinctColumnsCombiner.class);

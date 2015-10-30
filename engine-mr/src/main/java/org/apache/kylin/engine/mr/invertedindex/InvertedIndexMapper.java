@@ -24,12 +24,10 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hive.hcatalog.data.HCatRecord;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.kylin.common.KylinConfig;
+import org.apache.kylin.engine.mr.IMRInput;
 import org.apache.kylin.engine.mr.KylinMapper;
+import org.apache.kylin.engine.mr.MRUtil;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
 import org.apache.kylin.engine.mr.common.BatchConstants;
 import org.apache.kylin.invertedindex.IIInstance;
@@ -42,15 +40,14 @@ import org.apache.kylin.metadata.model.SegmentStatusEnum;
 /**
  * @author yangli9
  */
-public class InvertedIndexMapper<KEYIN> extends KylinMapper<KEYIN, HCatRecord, LongWritable, ImmutableBytesWritable> {
+public class InvertedIndexMapper<KEYIN> extends KylinMapper<KEYIN, Object, LongWritable, ImmutableBytesWritable> {
 
     private TableRecordInfo info;
     private TableRecord rec;
 
     private LongWritable outputKey;
     private ImmutableBytesWritable outputValue;
-    private HCatSchema schema = null;
-    private List<HCatFieldSchema> fields;
+    private IMRInput.IMRTableInputFormat flatTableInputFormat;
 
     @Override
     protected void setup(Context context) throws IOException {
@@ -68,17 +65,16 @@ public class InvertedIndexMapper<KEYIN> extends KylinMapper<KEYIN, HCatRecord, L
         outputKey = new LongWritable();
         outputValue = new ImmutableBytesWritable(rec.getBytes());
 
-        schema = HCatInputFormat.getTableSchema(context.getConfiguration());
-
-        fields = schema.getFields();
+        flatTableInputFormat = MRUtil.getBatchCubingInputSide(ii.getFirstSegment()).getFlatTableInputFormat();
     }
 
     @Override
-    public void map(KEYIN key, HCatRecord record, Context context) throws IOException, InterruptedException {
+    public void map(KEYIN key, Object record, Context context) throws IOException, InterruptedException {
 
+        String[] row = flatTableInputFormat.parseMapperInput(record);
         rec.reset();
-        for (int i = 0; i < fields.size(); i++) {
-            Object fieldValue = record.get(i);
+        for (int i = 0; i < row.length; i++) {
+            Object fieldValue = row[i];
             rec.setValueString(i, fieldValue == null ? null : fieldValue.toString());
         }
 

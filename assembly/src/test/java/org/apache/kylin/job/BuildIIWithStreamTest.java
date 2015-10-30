@@ -65,7 +65,7 @@ import org.apache.kylin.engine.streaming.invertedindex.SliceBuilder;
 import org.apache.kylin.job.common.ShellExecutable;
 import org.apache.kylin.job.constant.ExecutableConstants;
 import org.apache.kylin.job.engine.JobEngineConfig;
-import org.apache.kylin.engine.mr.invertedindex.IICreateHTableJob;
+import org.apache.kylin.storage.hbase.ii.IICreateHTableJob;
 import org.apache.kylin.metadata.model.TblColRef;
 import org.apache.kylin.metadata.realization.RealizationStatusEnum;
 import org.apache.kylin.source.hive.HiveTableReader;

@@ -37,6 +37,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.common.util.AbstractKylinTestCase;
 import org.apache.kylin.common.util.ClassUtil;
+import org.apache.kylin.engine.mr.invertedindex.BatchIIJobBuilder;
 import org.apache.kylin.invertedindex.IIInstance;
 import org.apache.kylin.invertedindex.IIManager;
 import org.apache.kylin.invertedindex.IISegment;
@@ -45,7 +46,6 @@ import org.apache.kylin.job.execution.AbstractExecutable;
 import org.apache.kylin.job.execution.ExecutableState;
 import org.apache.kylin.job.impl.threadpool.DefaultScheduler;
 import org.apache.kylin.engine.mr.invertedindex.IIJob;
-import org.apache.kylin.engine.mr.invertedindex.IIJobBuilder;
 import org.apache.kylin.job.manager.ExecutableManager;
 import org.apache.kylin.metadata.realization.RealizationStatusEnum;
 import org.apache.kylin.storage.hbase.steps.HBaseMetadataTestCase;
@@ -225,8 +225,9 @@ public class BuildIIWithEngineTest {
         IISegment segment = iiManager.buildSegment(iiInstance, startDate, endDate);
         iiInstance.getSegments().add(segment);
         iiManager.updateII(iiInstance);
-        IIJobBuilder iiJobBuilder = new IIJobBuilder(jobEngineConfig);
-        IIJob job = iiJobBuilder.buildJob(segment, "TEST");
+
+        BatchIIJobBuilder batchIIJobBuilder = new BatchIIJobBuilder(segment, "SYSTEM");
+        IIJob job = batchIIJobBuilder.build();
         jobService.addJob(job);
         waitForJob(job.getId());
         return job.getId();

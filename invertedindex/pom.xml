@@ -51,6 +51,10 @@
             <groupId>com.n3twork.druid</groupId>
             <artifactId>extendedset</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ning</groupId>
+            <artifactId>compress-lzf</artifactId>
+        </dependency>
 
         <!-- Env & Test -->
         <dependency>

@@ -30,9 +30,9 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.kylin.common.KylinConfig;
-import org.apache.kylin.engine.mr.HadoopUtil;
+import org.apache.kylin.engine.mr.IMRInput;
+import org.apache.kylin.engine.mr.MRUtil;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
 import org.apache.kylin.engine.mr.common.BatchConstants;
 import org.apache.kylin.invertedindex.IIInstance;
@@ -74,7 +74,7 @@ public class InvertedIndexJob extends AbstractHadoopJob {
 
             setJobClasspath(job);
 
-            setupMapper(intermediateTable);
+            setupMapper(ii.getFirstSegment());
             setupReducer(output, sharding);
             attachMetadata(ii);
 
@@ -128,12 +128,15 @@ public class InvertedIndexJob extends AbstractHadoopJob {
         attachKylinPropsAndMetadata(dumpList, conf);
     }
 
-    private void setupMapper(String intermediateTable) throws IOException {
+    private void setupMapper(IISegment segment) throws IOException {
 
-        String[] dbTableNames = HadoopUtil.parseHiveTableName(intermediateTable);
-        HCatInputFormat.setInput(job, dbTableNames[0], dbTableNames[1]);
+//        String[] dbTableNames = HadoopUtil.parseHiveTableName(intermediateTable);
+//        HCatInputFormat.setInput(job, dbTableNames[0], dbTableNames[1]);
+//
+//        job.setInputFormatClass(HCatInputFormat.class);
+        IMRInput.IMRTableInputFormat flatTableInputFormat = MRUtil.getBatchCubingInputSide(segment).getFlatTableInputFormat();
+        flatTableInputFormat.configureJob(job);
 
-        job.setInputFormatClass(HCatInputFormat.class);
 
         job.setMapperClass(InvertedIndexMapper.class);
         job.setMapOutputKeyClass(LongWritable.class);

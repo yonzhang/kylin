@@ -144,7 +144,6 @@ public class BuildIIWithEngineTest {
     }
 
     @Test
-    @Ignore
     public void testBuildII() throws Exception {
 
         String[] testCase = new String[] { "buildIIInnerJoin", "buildIILeftJoin" };

@@ -46,12 +46,17 @@ public class IIBulkLoadJob extends AbstractHadoopJob {
             options.addOption(OPTION_II_NAME);
             parseOptions(options, args);
 
-            String tableName = getOptionValue(OPTION_HTABLE_NAME);
+            String tableName = getOptionValue(OPTION_HTABLE_NAME).toUpperCase();
             String input = getOptionValue(OPTION_INPUT_PATH);
 
             FileSystem fs = FileSystem.get(getConf());
-            FsPermission permission = new FsPermission((short) 0777);
-            fs.setPermission(new Path(input, IIDesc.HBASE_FAMILY), permission);
+            Path columnFamilyPath = new Path(input, IIDesc.HBASE_FAMILY);
+
+            // File may have already been auto-loaded (in the case of MapR DB)
+            if (fs.exists(columnFamilyPath)) {
+                FsPermission permission = new FsPermission((short) 0777);
+                fs.setPermission(columnFamilyPath, permission);
+            }
 
             return ToolRunner.run(new LoadIncrementalHFiles(getConf()), new String[] { input, tableName });
 

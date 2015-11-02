@@ -199,7 +199,7 @@ public class IIKeyValueCodec implements KeyValueCodec {
                             valueContainers[curCol] = c;
                         } else {
                             final ImmutableBytesWritable dictBytes = row.getDictionary();
-                            if (dictBytes.get() != null && dictBytes.getLength() != 0) {
+                            if (dictBytes.getLength() != 0) {
                                 final Dictionary<?> dictionary = DictionarySerializer.deserialize(new ByteArray(dictBytes.get(), dictBytes.getOffset(), dictBytes.getLength()));
                                 CompressedValueContainer c = new CompressedValueContainer(dictionary.getSizeOfId(), dictionary.getMaxId() - dictionary.getMinId() + 1, 0);
                                 c.fromBytes(row.getValue());

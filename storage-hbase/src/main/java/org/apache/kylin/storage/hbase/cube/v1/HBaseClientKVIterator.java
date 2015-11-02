@@ -82,7 +82,8 @@ public class HBaseClientKVIterator implements Iterable<IIRow>, Closeable {
             key.set(c.getRowArray(), c.getRowOffset(), c.getRowLength());
             value.set(c.getValueArray(), c.getValueOffset(), c.getValueLength());
             c = r.getColumnLatestCell(IIDesc.HBASE_FAMILY_BYTES, IIDesc.HBASE_DICTIONARY_BYTES);
-            dict.set(c.getValueArray(), c.getValueOffset(), c.getValueLength());
+            if (c != null)
+                dict.set(c.getValueArray(), c.getValueOffset(), c.getValueLength());
             return pair;
         }
 

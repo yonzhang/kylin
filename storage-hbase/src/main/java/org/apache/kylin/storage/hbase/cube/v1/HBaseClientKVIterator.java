@@ -69,7 +69,7 @@ public class HBaseClientKVIterator implements Iterable<IIRow>, Closeable {
         ImmutableBytesWritable value = new ImmutableBytesWritable();
         ImmutableBytesWritable dict = new ImmutableBytesWritable();
         IIRow pair = new IIRow(key, value, dict);
-        static final byte[] EMPTY_BYTES = new byte[0];
+        final byte[] EMPTY_BYTES = new byte[0];
 
         @Override
         public boolean hasNext() {

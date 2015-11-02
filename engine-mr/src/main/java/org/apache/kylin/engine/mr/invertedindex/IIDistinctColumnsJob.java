@@ -21,6 +21,7 @@ package org.apache.kylin.engine.mr.invertedindex;
 import java.io.IOException;
 
 import org.apache.commons.cli.Options;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.ShortWritable;
@@ -81,6 +82,8 @@ public class IIDistinctColumnsJob extends AbstractHadoopJob {
             setupMapper(ii.getFirstSegment());
             setupReducer(output);
 
+            Configuration conf = job.getConfiguration();
+            attachKylinPropsAndMetadata(ii, conf);
             return waitForCompletion(job);
 
         } catch (Exception e) {

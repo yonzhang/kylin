@@ -19,18 +19,15 @@
 package org.apache.kylin.storage.hbase.ii;
 
 import org.apache.commons.cli.Options;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
-import org.apache.kylin.invertedindex.IIInstance;
-import org.apache.kylin.invertedindex.IIManager;
-import org.apache.kylin.invertedindex.IISegment;
 import org.apache.kylin.invertedindex.model.IIDesc;
-import org.apache.kylin.metadata.model.SegmentStatusEnum;
+import org.apache.kylin.storage.hbase.HBaseConnection;
 
 /**
  */
@@ -49,7 +46,9 @@ public class IIBulkLoadJob extends AbstractHadoopJob {
             String tableName = getOptionValue(OPTION_HTABLE_NAME).toUpperCase();
             String input = getOptionValue(OPTION_INPUT_PATH);
 
-            FileSystem fs = FileSystem.get(getConf());
+            Configuration conf = HBaseConnection.getCurrentHBaseConfiguration();
+            FileSystem fs = FileSystem.get(conf);
+
             Path columnFamilyPath = new Path(input, IIDesc.HBASE_FAMILY);
 
             // File may have already been auto-loaded (in the case of MapR DB)
@@ -58,7 +57,7 @@ public class IIBulkLoadJob extends AbstractHadoopJob {
                 fs.setPermission(columnFamilyPath, permission);
             }
 
-            return ToolRunner.run(new LoadIncrementalHFiles(getConf()), new String[] { input, tableName });
+            return ToolRunner.run(new LoadIncrementalHFiles(conf), new String[] { input, tableName });
 
         } catch (Exception e) {
             printUsage(options);

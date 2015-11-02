@@ -105,7 +105,6 @@ public class BuildIIWithStreamTest {
 
         kylinConfig = KylinConfig.getInstanceFromEnv();
         iiManager = IIManager.getInstance(kylinConfig);
-        iiManager = IIManager.getInstance(kylinConfig);
         for (String iiInstance : II_NAME) {
 
             IIInstance ii = iiManager.getII(iiInstance);

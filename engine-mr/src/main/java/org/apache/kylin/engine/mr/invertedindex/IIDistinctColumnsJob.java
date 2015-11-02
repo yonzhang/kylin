@@ -83,6 +83,7 @@ public class IIDistinctColumnsJob extends AbstractHadoopJob {
             setupReducer(output);
 
             Configuration conf = job.getConfiguration();
+            conf.set(BatchConstants.CFG_II_NAME, ii.getName());
             attachKylinPropsAndMetadata(ii, conf);
             return waitForCompletion(job);
 

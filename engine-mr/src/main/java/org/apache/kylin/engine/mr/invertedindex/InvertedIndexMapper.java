@@ -76,7 +76,7 @@ public class InvertedIndexMapper<KEYIN> extends KylinMapper<KEYIN, Object, LongW
         for (int i = 0; i < row.length; i++) {
             Object fieldValue = row[i];
             if (fieldValue != null)
-                rec.setValueString(i, fieldValue == null ? null : fieldValue.toString());
+                rec.setValueString(i, fieldValue.toString());
         }
 
         outputKey.set(rec.getTimestamp());

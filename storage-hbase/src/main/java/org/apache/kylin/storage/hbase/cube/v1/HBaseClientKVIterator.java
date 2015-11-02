@@ -69,6 +69,7 @@ public class HBaseClientKVIterator implements Iterable<IIRow>, Closeable {
         ImmutableBytesWritable value = new ImmutableBytesWritable();
         ImmutableBytesWritable dict = new ImmutableBytesWritable();
         IIRow pair = new IIRow(key, value, dict);
+        static final byte[] EMPTY_BYTES = new byte[0];
 
         @Override
         public boolean hasNext() {
@@ -82,8 +83,11 @@ public class HBaseClientKVIterator implements Iterable<IIRow>, Closeable {
             key.set(c.getRowArray(), c.getRowOffset(), c.getRowLength());
             value.set(c.getValueArray(), c.getValueOffset(), c.getValueLength());
             c = r.getColumnLatestCell(IIDesc.HBASE_FAMILY_BYTES, IIDesc.HBASE_DICTIONARY_BYTES);
-            if (c != null)
+            if (c != null) {
                 dict.set(c.getValueArray(), c.getValueOffset(), c.getValueLength());
+            } else {
+                dict.set(EMPTY_BYTES);
+            }
             return pair;
         }
 

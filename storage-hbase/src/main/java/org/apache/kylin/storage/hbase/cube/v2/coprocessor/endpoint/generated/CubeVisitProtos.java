@@ -1776,6 +1776,51 @@ public final class CubeVisitProtos {
        * <code>optional int32 aggregatedRowCount = 4;</code>
        */
       int getAggregatedRowCount();
+
+      // optional double systemCpuLoad = 5;
+      /**
+       * <code>optional double systemCpuLoad = 5;</code>
+       */
+      boolean hasSystemCpuLoad();
+      /**
+       * <code>optional double systemCpuLoad = 5;</code>
+       */
+      double getSystemCpuLoad();
+
+      // optional double freePhysicalMemorySize = 6;
+      /**
+       * <code>optional double freePhysicalMemorySize = 6;</code>
+       */
+      boolean hasFreePhysicalMemorySize();
+      /**
+       * <code>optional double freePhysicalMemorySize = 6;</code>
+       */
+      double getFreePhysicalMemorySize();
+
+      // optional double freeSwapSpaceSize = 7;
+      /**
+       * <code>optional double freeSwapSpaceSize = 7;</code>
+       */
+      boolean hasFreeSwapSpaceSize();
+      /**
+       * <code>optional double freeSwapSpaceSize = 7;</code>
+       */
+      double getFreeSwapSpaceSize();
+
+      // optional string hostname = 8;
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      boolean hasHostname();
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      java.lang.String getHostname();
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      com.google.protobuf.ByteString
+          getHostnameBytes();
     }
     /**
      * Protobuf type {@code CubeVisitResponse.Stats}
@@ -1846,6 +1891,26 @@ public final class CubeVisitProtos {
               case 32: {
                 bitField0_ |= 0x00000008;
                 aggregatedRowCount_ = input.readInt32();
+                break;
+              }
+              case 41: {
+                bitField0_ |= 0x00000010;
+                systemCpuLoad_ = input.readDouble();
+                break;
+              }
+              case 49: {
+                bitField0_ |= 0x00000020;
+                freePhysicalMemorySize_ = input.readDouble();
+                break;
+              }
+              case 57: {
+                bitField0_ |= 0x00000040;
+                freeSwapSpaceSize_ = input.readDouble();
+                break;
+              }
+              case 66: {
+                bitField0_ |= 0x00000080;
+                hostname_ = input.readBytes();
                 break;
               }
             }
@@ -1952,11 +2017,106 @@ public final class CubeVisitProtos {
         return aggregatedRowCount_;
       }
 
+      // optional double systemCpuLoad = 5;
+      public static final int SYSTEMCPULOAD_FIELD_NUMBER = 5;
+      private double systemCpuLoad_;
+      /**
+       * <code>optional double systemCpuLoad = 5;</code>
+       */
+      public boolean hasSystemCpuLoad() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional double systemCpuLoad = 5;</code>
+       */
+      public double getSystemCpuLoad() {
+        return systemCpuLoad_;
+      }
+
+      // optional double freePhysicalMemorySize = 6;
+      public static final int FREEPHYSICALMEMORYSIZE_FIELD_NUMBER = 6;
+      private double freePhysicalMemorySize_;
+      /**
+       * <code>optional double freePhysicalMemorySize = 6;</code>
+       */
+      public boolean hasFreePhysicalMemorySize() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional double freePhysicalMemorySize = 6;</code>
+       */
+      public double getFreePhysicalMemorySize() {
+        return freePhysicalMemorySize_;
+      }
+
+      // optional double freeSwapSpaceSize = 7;
+      public static final int FREESWAPSPACESIZE_FIELD_NUMBER = 7;
+      private double freeSwapSpaceSize_;
+      /**
+       * <code>optional double freeSwapSpaceSize = 7;</code>
+       */
+      public boolean hasFreeSwapSpaceSize() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional double freeSwapSpaceSize = 7;</code>
+       */
+      public double getFreeSwapSpaceSize() {
+        return freeSwapSpaceSize_;
+      }
+
+      // optional string hostname = 8;
+      public static final int HOSTNAME_FIELD_NUMBER = 8;
+      private java.lang.Object hostname_;
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      public boolean hasHostname() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      public java.lang.String getHostname() {
+        java.lang.Object ref = hostname_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            hostname_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string hostname = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getHostnameBytes() {
+        java.lang.Object ref = hostname_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          hostname_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
       private void initFields() {
         serviceStartTime_ = 0L;
         serviceEndTime_ = 0L;
         scannedRowCount_ = 0;
         aggregatedRowCount_ = 0;
+        systemCpuLoad_ = 0D;
+        freePhysicalMemorySize_ = 0D;
+        freeSwapSpaceSize_ = 0D;
+        hostname_ = "";
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -1982,6 +2142,18 @@ public final class CubeVisitProtos {
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           output.writeInt32(4, aggregatedRowCount_);
         }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          output.writeDouble(5, systemCpuLoad_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          output.writeDouble(6, freePhysicalMemorySize_);
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          output.writeDouble(7, freeSwapSpaceSize_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          output.writeBytes(8, getHostnameBytes());
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -2006,6 +2178,22 @@ public final class CubeVisitProtos {
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(4, aggregatedRowCount_);
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeDoubleSize(5, systemCpuLoad_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeDoubleSize(6, freePhysicalMemorySize_);
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeDoubleSize(7, freeSwapSpaceSize_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(8, getHostnameBytes());
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -2050,6 +2238,23 @@ public final class CubeVisitProtos {
           result = result && (getAggregatedRowCount()
               == other.getAggregatedRowCount());
         }
+        result = result && (hasSystemCpuLoad() == other.hasSystemCpuLoad());
+        if (hasSystemCpuLoad()) {
+          result = result && (Double.doubleToLongBits(getSystemCpuLoad())    == Double.doubleToLongBits(other.getSystemCpuLoad()));
+        }
+        result = result && (hasFreePhysicalMemorySize() == other.hasFreePhysicalMemorySize());
+        if (hasFreePhysicalMemorySize()) {
+          result = result && (Double.doubleToLongBits(getFreePhysicalMemorySize())    == Double.doubleToLongBits(other.getFreePhysicalMemorySize()));
+        }
+        result = result && (hasFreeSwapSpaceSize() == other.hasFreeSwapSpaceSize());
+        if (hasFreeSwapSpaceSize()) {
+          result = result && (Double.doubleToLongBits(getFreeSwapSpaceSize())    == Double.doubleToLongBits(other.getFreeSwapSpaceSize()));
+        }
+        result = result && (hasHostname() == other.hasHostname());
+        if (hasHostname()) {
+          result = result && getHostname()
+              .equals(other.getHostname());
+        }
         result = result &&
             getUnknownFields().equals(other.getUnknownFields());
         return result;
@@ -2078,6 +2283,25 @@ public final class CubeVisitProtos {
         if (hasAggregatedRowCount()) {
           hash = (37 * hash) + AGGREGATEDROWCOUNT_FIELD_NUMBER;
           hash = (53 * hash) + getAggregatedRowCount();
+        }
+        if (hasSystemCpuLoad()) {
+          hash = (37 * hash) + SYSTEMCPULOAD_FIELD_NUMBER;
+          hash = (53 * hash) + hashLong(
+              Double.doubleToLongBits(getSystemCpuLoad()));
+        }
+        if (hasFreePhysicalMemorySize()) {
+          hash = (37 * hash) + FREEPHYSICALMEMORYSIZE_FIELD_NUMBER;
+          hash = (53 * hash) + hashLong(
+              Double.doubleToLongBits(getFreePhysicalMemorySize()));
+        }
+        if (hasFreeSwapSpaceSize()) {
+          hash = (37 * hash) + FREESWAPSPACESIZE_FIELD_NUMBER;
+          hash = (53 * hash) + hashLong(
+              Double.doubleToLongBits(getFreeSwapSpaceSize()));
+        }
+        if (hasHostname()) {
+          hash = (37 * hash) + HOSTNAME_FIELD_NUMBER;
+          hash = (53 * hash) + getHostname().hashCode();
         }
         hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
@@ -2196,6 +2420,14 @@ public final class CubeVisitProtos {
           bitField0_ = (bitField0_ & ~0x00000004);
           aggregatedRowCount_ = 0;
           bitField0_ = (bitField0_ & ~0x00000008);
+          systemCpuLoad_ = 0D;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          freePhysicalMemorySize_ = 0D;
+          bitField0_ = (bitField0_ & ~0x00000020);
+          freeSwapSpaceSize_ = 0D;
+          bitField0_ = (bitField0_ & ~0x00000040);
+          hostname_ = "";
+          bitField0_ = (bitField0_ & ~0x00000080);
           return this;
         }
 
@@ -2240,6 +2472,22 @@ public final class CubeVisitProtos {
             to_bitField0_ |= 0x00000008;
           }
           result.aggregatedRowCount_ = aggregatedRowCount_;
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000010;
+          }
+          result.systemCpuLoad_ = systemCpuLoad_;
+          if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+            to_bitField0_ |= 0x00000020;
+          }
+          result.freePhysicalMemorySize_ = freePhysicalMemorySize_;
+          if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+            to_bitField0_ |= 0x00000040;
+          }
+          result.freeSwapSpaceSize_ = freeSwapSpaceSize_;
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          result.hostname_ = hostname_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -2267,6 +2515,20 @@ public final class CubeVisitProtos {
           }
           if (other.hasAggregatedRowCount()) {
             setAggregatedRowCount(other.getAggregatedRowCount());
+          }
+          if (other.hasSystemCpuLoad()) {
+            setSystemCpuLoad(other.getSystemCpuLoad());
+          }
+          if (other.hasFreePhysicalMemorySize()) {
+            setFreePhysicalMemorySize(other.getFreePhysicalMemorySize());
+          }
+          if (other.hasFreeSwapSpaceSize()) {
+            setFreeSwapSpaceSize(other.getFreeSwapSpaceSize());
+          }
+          if (other.hasHostname()) {
+            bitField0_ |= 0x00000080;
+            hostname_ = other.hostname_;
+            onChanged();
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -2423,6 +2685,179 @@ public final class CubeVisitProtos {
         public Builder clearAggregatedRowCount() {
           bitField0_ = (bitField0_ & ~0x00000008);
           aggregatedRowCount_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // optional double systemCpuLoad = 5;
+        private double systemCpuLoad_ ;
+        /**
+         * <code>optional double systemCpuLoad = 5;</code>
+         */
+        public boolean hasSystemCpuLoad() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional double systemCpuLoad = 5;</code>
+         */
+        public double getSystemCpuLoad() {
+          return systemCpuLoad_;
+        }
+        /**
+         * <code>optional double systemCpuLoad = 5;</code>
+         */
+        public Builder setSystemCpuLoad(double value) {
+          bitField0_ |= 0x00000010;
+          systemCpuLoad_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional double systemCpuLoad = 5;</code>
+         */
+        public Builder clearSystemCpuLoad() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          systemCpuLoad_ = 0D;
+          onChanged();
+          return this;
+        }
+
+        // optional double freePhysicalMemorySize = 6;
+        private double freePhysicalMemorySize_ ;
+        /**
+         * <code>optional double freePhysicalMemorySize = 6;</code>
+         */
+        public boolean hasFreePhysicalMemorySize() {
+          return ((bitField0_ & 0x00000020) == 0x00000020);
+        }
+        /**
+         * <code>optional double freePhysicalMemorySize = 6;</code>
+         */
+        public double getFreePhysicalMemorySize() {
+          return freePhysicalMemorySize_;
+        }
+        /**
+         * <code>optional double freePhysicalMemorySize = 6;</code>
+         */
+        public Builder setFreePhysicalMemorySize(double value) {
+          bitField0_ |= 0x00000020;
+          freePhysicalMemorySize_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional double freePhysicalMemorySize = 6;</code>
+         */
+        public Builder clearFreePhysicalMemorySize() {
+          bitField0_ = (bitField0_ & ~0x00000020);
+          freePhysicalMemorySize_ = 0D;
+          onChanged();
+          return this;
+        }
+
+        // optional double freeSwapSpaceSize = 7;
+        private double freeSwapSpaceSize_ ;
+        /**
+         * <code>optional double freeSwapSpaceSize = 7;</code>
+         */
+        public boolean hasFreeSwapSpaceSize() {
+          return ((bitField0_ & 0x00000040) == 0x00000040);
+        }
+        /**
+         * <code>optional double freeSwapSpaceSize = 7;</code>
+         */
+        public double getFreeSwapSpaceSize() {
+          return freeSwapSpaceSize_;
+        }
+        /**
+         * <code>optional double freeSwapSpaceSize = 7;</code>
+         */
+        public Builder setFreeSwapSpaceSize(double value) {
+          bitField0_ |= 0x00000040;
+          freeSwapSpaceSize_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional double freeSwapSpaceSize = 7;</code>
+         */
+        public Builder clearFreeSwapSpaceSize() {
+          bitField0_ = (bitField0_ & ~0x00000040);
+          freeSwapSpaceSize_ = 0D;
+          onChanged();
+          return this;
+        }
+
+        // optional string hostname = 8;
+        private java.lang.Object hostname_ = "";
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public boolean hasHostname() {
+          return ((bitField0_ & 0x00000080) == 0x00000080);
+        }
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public java.lang.String getHostname() {
+          java.lang.Object ref = hostname_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            hostname_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public com.google.protobuf.ByteString
+            getHostnameBytes() {
+          java.lang.Object ref = hostname_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            hostname_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public Builder setHostname(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+          hostname_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public Builder clearHostname() {
+          bitField0_ = (bitField0_ & ~0x00000080);
+          hostname_ = getDefaultInstance().getHostname();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string hostname = 8;</code>
+         */
+        public Builder setHostnameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+          hostname_ = value;
           onChanged();
           return this;
         }
@@ -3224,17 +3659,19 @@ public final class CubeVisitProtos {
       "ubeVisitRequest\022\020\n\010behavior\030\001 \002(\t\022\025\n\rgtS" +
       "canRequest\030\002 \002(\014\022\024\n\014hbaseRawScan\030\003 \002(\014\0223" +
       "\n\020hbaseColumnsToGT\030\004 \003(\0132\031.CubeVisitRequ" +
-      "est.IntList\032\027\n\007IntList\022\014\n\004ints\030\001 \003(\005\"\304\001\n" +
+      "est.IntList\032\027\n\007IntList\022\014\n\004ints\030\001 \003(\005\"\251\002\n" +
       "\021CubeVisitResponse\022\026\n\016compressedRows\030\001 \002" +
       "(\014\022\'\n\005stats\030\002 \002(\0132\030.CubeVisitResponse.St" +
-      "ats\032n\n\005Stats\022\030\n\020serviceStartTime\030\001 \001(\003\022\026",
-      "\n\016serviceEndTime\030\002 \001(\003\022\027\n\017scannedRowCoun" +
-      "t\030\003 \001(\005\022\032\n\022aggregatedRowCount\030\004 \001(\0052F\n\020C" +
-      "ubeVisitService\0222\n\tvisitCube\022\021.CubeVisit" +
-      "Request\032\022.CubeVisitResponseB`\nEorg.apach" +
-      "e.kylin.storage.hbase.cube.v2.coprocesso" +
-      "r.endpoint.generatedB\017CubeVisitProtosH\001\210" +
-      "\001\001\240\001\001"
+      "ats\032\322\001\n\005Stats\022\030\n\020serviceStartTime\030\001 \001(\003\022",
+      "\026\n\016serviceEndTime\030\002 \001(\003\022\027\n\017scannedRowCou" +
+      "nt\030\003 \001(\005\022\032\n\022aggregatedRowCount\030\004 \001(\005\022\025\n\r" +
+      "systemCpuLoad\030\005 \001(\001\022\036\n\026freePhysicalMemor" +
+      "ySize\030\006 \001(\001\022\031\n\021freeSwapSpaceSize\030\007 \001(\001\022\020" +
+      "\n\010hostname\030\010 \001(\t2F\n\020CubeVisitService\0222\n\t" +
+      "visitCube\022\021.CubeVisitRequest\032\022.CubeVisit" +
+      "ResponseB`\nEorg.apache.kylin.storage.hba" +
+      "se.cube.v2.coprocessor.endpoint.generate" +
+      "dB\017CubeVisitProtosH\001\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3264,7 +3701,7 @@ public final class CubeVisitProtos {
           internal_static_CubeVisitResponse_Stats_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_CubeVisitResponse_Stats_descriptor,
-              new java.lang.String[] { "ServiceStartTime", "ServiceEndTime", "ScannedRowCount", "AggregatedRowCount", });
+              new java.lang.String[] { "ServiceStartTime", "ServiceEndTime", "ScannedRowCount", "AggregatedRowCount", "SystemCpuLoad", "FreePhysicalMemorySize", "FreeSwapSpaceSize", "Hostname", });
           return null;
         }
       };

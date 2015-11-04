@@ -19,6 +19,7 @@
 package org.apache.kylin.common.util;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.TreeMultiset;
+import com.sun.management.OperatingSystemMXBean;
 
 /**
 * <p/>
@@ -72,10 +74,13 @@ public class BasicTest {
     }
 
     @Test
-    public void testxx() {
-        B b= new B();
-        b.foo();;
-      
+    public void testxx() throws InterruptedException {
+        while (true) {
+            OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            System.out.println(operatingSystemMXBean.getSystemCpuLoad());
+            System.out.println(operatingSystemMXBean.getFreePhysicalMemorySize());
+            Thread.sleep(1000);
+        }
     }
 
     @Test

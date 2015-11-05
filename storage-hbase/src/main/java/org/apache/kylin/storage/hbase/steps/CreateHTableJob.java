@@ -83,7 +83,6 @@ public class CreateHTableJob extends AbstractHadoopJob {
     CubeDesc cubeDesc = null;
     String segmentName = null;
     KylinConfig kylinConfig;
-    public static final boolean ENABLE_CUBOID_SHARDING = true;
 
     @Override
     public int run(String[] args) throws Exception {
@@ -267,7 +266,7 @@ public class CreateHTableJob extends AbstractHadoopJob {
         nRegion = Math.max(kylinConfig.getHBaseRegionCountMin(), nRegion);
         nRegion = Math.min(kylinConfig.getHBaseRegionCountMax(), nRegion);
 
-        if (ENABLE_CUBOID_SHARDING) {//&& (nRegion > 1)) {
+        if (cubeSegment.isEnableSharding()) {//&& (nRegion > 1)) {
             //use prime nRegions to help random sharding
             int original = nRegion;
             nRegion = Primes.nextPrime(nRegion);//return 2 for input 1
@@ -289,7 +288,7 @@ public class CreateHTableJob extends AbstractHadoopJob {
         logger.info("Expecting " + nRegion + " regions.");
         logger.info("Expecting " + mbPerRegion + " MB per region.");
 
-        if (ENABLE_CUBOID_SHARDING) {
+        if (cubeSegment.isEnableSharding()) {
             //each cuboid will be split into different number of shards
             HashMap<Long, Short> cuboidShards = Maps.newHashMap();
             double[] regionSizes = new double[nRegion];

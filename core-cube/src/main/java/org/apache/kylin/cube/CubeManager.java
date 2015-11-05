@@ -568,6 +568,7 @@ public class CubeManager implements IRealizationProvider {
         segment.setDateRangeEnd(endDate);
         segment.setStatus(SegmentStatusEnum.NEW);
         segment.setStorageLocationIdentifier(generateStorageLocation());
+        segment.setEnableSharding(true);
 
         segment.setCubeInstance(cubeInstance);
 

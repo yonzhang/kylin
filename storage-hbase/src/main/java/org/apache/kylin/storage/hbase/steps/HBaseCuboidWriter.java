@@ -94,7 +94,7 @@ public final class HBaseCuboidWriter implements ICuboidWriter {
 
     //TODO:shardingonstreaming
     private byte[] createKey(Long cuboidId, GTRecord record) {
-        if (rowKeyEncoder.getCuboidID() != cuboidId) {
+        if (rowKeyEncoder == null || rowKeyEncoder.getCuboidID() != cuboidId) {
             rowKeyEncoder = AbstractRowKeyEncoder.createInstance(cubeSegment, Cuboid.findById(cubeDesc, cuboidId));
             keybuf = rowKeyEncoder.createBuf();
         }

@@ -20,9 +20,11 @@ package org.apache.kylin.cube.kv;
 
 import java.util.Map;
 
+import org.apache.kylin.common.util.ImmutableBitSet;
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.cube.cuboid.Cuboid;
 import org.apache.kylin.dict.Dictionary;
+import org.apache.kylin.gridtable.GTRecord;
 import org.apache.kylin.metadata.model.TblColRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,7 @@ public abstract class AbstractRowKeyEncoder {
         return new RowKeyEncoder(cubeSeg, cuboid);
     }
 
-    protected AbstractRowKeyEncoder(CubeSegment cubeSeg,Cuboid cuboid) {
+    protected AbstractRowKeyEncoder(CubeSegment cubeSeg, Cuboid cuboid) {
         this.cuboid = cuboid;
         this.cubeSeg = cubeSeg;
     }
@@ -53,6 +55,20 @@ public abstract class AbstractRowKeyEncoder {
     public void setBlankByte(byte blankByte) {
         this.blankByte = blankByte;
     }
+
+    public long getCuboidID() {
+        return cuboid.getId();
+    }
+
+    abstract public byte[] createBuf();
+
+    /**
+     * encode a gtrecord into a given byte[] buffer
+     * @param record
+     * @param keyColumns
+     * @param buf
+     */
+    abstract public void encode(GTRecord record, ImmutableBitSet keyColumns, byte[] buf);
 
     abstract public byte[] encode(Map<TblColRef, String> valueMap);
 

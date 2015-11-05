@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.kylin.common.persistence.ResourceStore;
 import org.apache.kylin.common.util.ShardingHash;
+import org.apache.kylin.cube.kv.RowConstants;
 import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.dict.Dictionary;
 import org.apache.kylin.dict.IDictionaryAware;
@@ -376,6 +377,10 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
 
     public void setEnableSharding(boolean enableSharding) {
         this.enableSharding = enableSharding;
+    }
+
+    public int getRowKeyPreambleSize() {
+        return enableSharding ? RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN : RowConstants.ROWKEY_CUBOIDID_LEN;
     }
 
     /**

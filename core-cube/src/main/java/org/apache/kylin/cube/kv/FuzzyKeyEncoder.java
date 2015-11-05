@@ -18,8 +18,6 @@
 
 package org.apache.kylin.cube.kv;
 
-import java.util.Arrays;
-
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.cube.cuboid.Cuboid;
 
@@ -35,9 +33,16 @@ public class FuzzyKeyEncoder extends RowKeyEncoder {
     }
 
     @Override
-    protected byte[] defaultValue(int length) {
-        byte[] keyBytes = new byte[length];
-        Arrays.fill(keyBytes, RowConstants.BYTE_ZERO);
-        return keyBytes;
+    protected short calculateShard(byte[] key) {
+        if (enableSharding) {
+            return 0;
+        } else {
+            throw new RuntimeException("If enableSharding false, you should never calculate shard");
+        }
+    }
+
+    @Override
+    protected byte defaultValue() {
+        return RowConstants.BYTE_ZERO;
     }
 }

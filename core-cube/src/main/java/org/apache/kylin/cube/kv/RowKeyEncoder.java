@@ -23,11 +23,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.kylin.common.util.ByteArray;
 import org.apache.kylin.common.util.Bytes;
 import org.apache.kylin.common.util.BytesUtil;
+import org.apache.kylin.common.util.ImmutableBitSet;
 import org.apache.kylin.common.util.ShardingHash;
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.cube.cuboid.Cuboid;
+import org.apache.kylin.gridtable.GTRecord;
 import org.apache.kylin.metadata.model.TblColRef;
 
 public class RowKeyEncoder extends AbstractRowKeyEncoder {
@@ -46,7 +49,7 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
     }
 
     protected int getHeaderLength() {
-        return enableSharding ? RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN : RowConstants.ROWKEY_CUBOIDID_LEN;
+        return cubeSeg.getRowKeyPreambleSize();
     }
 
     protected int getBytesLength() {
@@ -60,12 +63,26 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
             short shardOffset = ShardingHash.getShard(key, bodyOffset, bodyLength, cuboidShardNum);
             return ShardingHash.normalize(cubeSeg.getCuboidBaseShard(cuboid.getId()), shardOffset, cubeSeg.getTotalShards());
         } else {
-            throw new RuntimeException("If enableSharding false, you should never caculate shard");
+            throw new RuntimeException("If enableSharding false, you should never calculate shard");
         }
     }
 
     public int getColumnLength(TblColRef col) {
         return colIO.getColumnLength(col);
+    }
+
+    @Override
+    public byte[] createBuf() {
+        return new byte[this.getBytesLength()];
+    }
+
+    @Override
+    public void encode(GTRecord record, ImmutableBitSet keyColumns, byte[] buf) {
+        ByteArray byteArray = new ByteArray(buf, getHeaderLength(), 0);
+        record.exportColumns(keyColumns, byteArray, defaultValue());
+
+        //fill shard and cuboid
+        fillHeader(buf);
     }
 
     @Override
@@ -126,18 +143,15 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
     protected void fillColumnValue(TblColRef column, int columnLen, byte[] value, int valueLen, byte[] outputValue, int outputValueOffset) {
         // special null value case
         if (value == null) {
-            byte[] valueBytes = defaultValue(columnLen);
-            System.arraycopy(valueBytes, 0, outputValue, outputValueOffset, columnLen);
+            Arrays.fill(outputValue, outputValueOffset, outputValueOffset + columnLen, defaultValue());
             return;
         }
 
         colIO.writeColumn(column, value, valueLen, this.blankByte, outputValue, outputValueOffset);
     }
 
-    protected byte[] defaultValue(int length) {
-        byte[] values = new byte[length];
-        Arrays.fill(values, this.blankByte);
-        return values;
+    protected byte defaultValue() {
+        return this.blankByte;
     }
 
 }

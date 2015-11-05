@@ -41,6 +41,8 @@ import org.apache.kylin.storage.hbase.HBaseConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  */
 public class HBaseStreamingOutput implements IStreamingOutput {
@@ -51,6 +53,10 @@ public class HBaseStreamingOutput implements IStreamingOutput {
     public ICuboidWriter getCuboidWriter(IBuildable buildable) {
         try {
             CubeSegment cubeSegment = (CubeSegment) buildable;
+            
+            //If ever attempt to enable sharding on streaming please also check //TODO:shardingonstreaming
+            Preconditions.checkArgument(!cubeSegment.isEnableSharding(), "Streaming table not allowed to use sharding");
+            
             final HTableInterface hTable;
             hTable = createHTable(cubeSegment);
             return new HBaseCuboidWriter(cubeSegment, hTable);

@@ -33,6 +33,7 @@ public class RowConstants {
     public static final int ROWKEY_SHARDID_LEN = 2;
 
     public static final int ROWKEY_HEADER_LEN = ROWKEY_CUBOIDID_LEN + ROWKEY_SHARDID_LEN;
+    public static final int ROWKEY_SHARD_AND_CUBOID_LEN = ROWKEY_CUBOIDID_LEN + ROWKEY_SHARDID_LEN;
     
     public static final byte BYTE_ZERO = 0;
     public static final byte BYTE_ONE = 1;

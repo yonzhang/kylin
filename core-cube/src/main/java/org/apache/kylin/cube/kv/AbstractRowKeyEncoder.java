@@ -34,28 +34,24 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractRowKeyEncoder {
 
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractRowKeyEncoder.class);
     public static final byte DEFAULT_BLANK_BYTE = Dictionary.NULL;
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractRowKeyEncoder.class);
+    protected final Cuboid cuboid;
+    protected final CubeSegment cubeSeg;
+    protected byte blankByte = DEFAULT_BLANK_BYTE;
 
     public static AbstractRowKeyEncoder createInstance(CubeSegment cubeSeg, Cuboid cuboid) {
         return new RowKeyEncoder(cubeSeg, cuboid);
     }
 
-    protected final Cuboid cuboid;
-    protected byte blankByte = DEFAULT_BLANK_BYTE;
-    protected boolean encodeShard = true;
-
-    protected AbstractRowKeyEncoder(Cuboid cuboid) {
+    protected AbstractRowKeyEncoder(CubeSegment cubeSeg,Cuboid cuboid) {
         this.cuboid = cuboid;
+        this.cubeSeg = cubeSeg;
     }
 
     public void setBlankByte(byte blankByte) {
         this.blankByte = blankByte;
-    }
-
-    public void setEncodeShard(boolean encodeShard) {
-        this.encodeShard = encodeShard;
     }
 
     abstract public byte[] encode(Map<TblColRef, String> valueMap);

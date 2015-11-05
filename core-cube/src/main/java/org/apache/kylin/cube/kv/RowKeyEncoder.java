@@ -32,18 +32,35 @@ import org.apache.kylin.metadata.model.TblColRef;
 
 public class RowKeyEncoder extends AbstractRowKeyEncoder {
 
-    private int bytesLength;
-    protected int headerLength;
+    private int bodyLength = 0;
     private RowKeyColumnIO colIO;
-    CubeSegment cubeSeg;
+    protected boolean enableSharding;
 
     protected RowKeyEncoder(CubeSegment cubeSeg, Cuboid cuboid) {
-        super(cuboid);
-        this.cubeSeg = cubeSeg;
+        super(cubeSeg, cuboid);
+        enableSharding = cubeSeg.isEnableSharding();
         colIO = new RowKeyColumnIO(cubeSeg);
-        bytesLength = headerLength = RowConstants.ROWKEY_HEADER_LEN; // include shard and cuboidid 
         for (TblColRef column : cuboid.getColumns()) {
-            bytesLength += colIO.getColumnLength(column);
+            bodyLength += colIO.getColumnLength(column);
+        }
+    }
+
+    protected int getHeaderLength() {
+        return enableSharding ? RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN : RowConstants.ROWKEY_CUBOIDID_LEN;
+    }
+
+    protected int getBytesLength() {
+        return getHeaderLength() + bodyLength;
+    }
+
+    protected short calculateShard(byte[] key) {
+        if (enableSharding) {
+            int bodyOffset = RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN;
+            short cuboidShardNum = cubeSeg.getCuboidShardNum(cuboid.getId());
+            short shardOffset = ShardingHash.getShard(key, bodyOffset, bodyLength, cuboidShardNum);
+            return ShardingHash.normalize(cubeSeg.getCuboidBaseShard(cuboid.getId()), shardOffset, cubeSeg.getTotalShards());
+        } else {
+            throw new RuntimeException("If enableSharding false, you should never caculate shard");
         }
     }
 
@@ -71,9 +88,8 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
 
     @Override
     public byte[] encode(byte[][] values) {
-        byte[] bytes = new byte[this.bytesLength];
-        int bodyOffset = RowConstants.ROWKEY_HEADER_LEN;
-        int offset = bodyOffset;
+        byte[] bytes = new byte[this.getBytesLength()];
+        int offset = getHeaderLength();
 
         for (int i = 0; i < cuboid.getColumns().size(); i++) {
             TblColRef column = cuboid.getColumns().get(i);
@@ -93,27 +109,18 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
         return bytes;
     }
 
-    protected int fillHeader(byte[] bytes) {
+    protected void fillHeader(byte[] bytes) {
         int offset = 0;
 
-        if (encodeShard) {
-            short cuboidShardNum = cubeSeg.getCuboidShardNum(cuboid.getId());
-            short shardOffset = ShardingHash.getShard(bytes, RowConstants.ROWKEY_HEADER_LEN, bytes.length - RowConstants.ROWKEY_HEADER_LEN, cuboidShardNum);
-            short finalShard = ShardingHash.normalize(cubeSeg.getCuboidBaseShard(cuboid.getId()), shardOffset, cubeSeg.getTotalShards());
-            BytesUtil.writeShort(finalShard, bytes, offset, RowConstants.ROWKEY_SHARDID_LEN);
-        } else {
-            BytesUtil.writeShort((short) 0, bytes, offset, RowConstants.ROWKEY_SHARDID_LEN);
+        if (enableSharding) {
+            short shard = calculateShard(bytes);
+            BytesUtil.writeShort(shard, bytes, offset, RowConstants.ROWKEY_SHARDID_LEN);
+            offset += RowConstants.ROWKEY_SHARDID_LEN;
         }
-        offset += RowConstants.ROWKEY_SHARDID_LEN;
 
         System.arraycopy(cuboid.getBytes(), 0, bytes, offset, RowConstants.ROWKEY_CUBOIDID_LEN);
-        offset += RowConstants.ROWKEY_CUBOIDID_LEN;
-
-        if (this.headerLength != offset) {
-            throw new IllegalStateException("Expected header length is " + headerLength + ". But the offset is " + offset);
-        }
-        
-        return offset;
+        //offset += RowConstants.ROWKEY_CUBOIDID_LEN;
+        //return offset;
     }
 
     protected void fillColumnValue(TblColRef column, int columnLen, byte[] value, int valueLen, byte[] outputValue, int outputValueOffset) {

@@ -69,6 +69,8 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
     private String lastBuildJobID;
     @JsonProperty("create_time_utc")
     private long createTimeUTC;
+    @JsonProperty("enable_sharding")
+    private boolean enableSharding = true;
     @JsonProperty("cuboid_shard_nums")
     private Map<Long, Short> cuboidShardNums = Maps.newHashMap();
     @JsonProperty("total_shards")
@@ -368,6 +370,14 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
         return cubeInstance.getStorageType();
     }
 
+    public boolean isEnableSharding() {
+        return enableSharding;
+    }
+
+    public void setEnableSharding(boolean enableSharding) {
+        this.enableSharding = enableSharding;
+    }
+
     /**
      * get the number of shards where each cuboid will distribute
      * @return
@@ -380,14 +390,6 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
             return ret;
         }
     }
-
-    //    /**
-    //     * get the number of shards where each cuboid will distribute
-    //     * @return
-    //     */
-    //    public Map<Long, Short> getCuboidShards() {
-    //        return this.cuboidShards;
-    //    }
 
     public void setCuboidShardNums(Map<Long, Short> newCuboidShards) {
         this.cuboidShardNums = newCuboidShards;

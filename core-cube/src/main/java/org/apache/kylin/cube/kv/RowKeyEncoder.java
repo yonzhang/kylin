@@ -33,13 +33,15 @@ import org.apache.kylin.cube.cuboid.Cuboid;
 import org.apache.kylin.gridtable.GTRecord;
 import org.apache.kylin.metadata.model.TblColRef;
 
+import com.google.common.base.Preconditions;
+
 public class RowKeyEncoder extends AbstractRowKeyEncoder {
 
     private int bodyLength = 0;
     private RowKeyColumnIO colIO;
     protected boolean enableSharding;
 
-    protected RowKeyEncoder(CubeSegment cubeSeg, Cuboid cuboid) {
+    public RowKeyEncoder(CubeSegment cubeSeg, Cuboid cuboid) {
         super(cubeSeg, cuboid);
         enableSharding = cubeSeg.isEnableSharding();
         colIO = new RowKeyColumnIO(cubeSeg);
@@ -48,11 +50,11 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
         }
     }
 
-    protected int getHeaderLength() {
+    public int getHeaderLength() {
         return cubeSeg.getRowKeyPreambleSize();
     }
 
-    protected int getBytesLength() {
+    public int getBytesLength() {
         return getHeaderLength() + bodyLength;
     }
 
@@ -83,6 +85,17 @@ public class RowKeyEncoder extends AbstractRowKeyEncoder {
 
         //fill shard and cuboid
         fillHeader(buf);
+    }
+
+    @Override
+    public void encode(ByteArray bodyBytes, ByteArray outputBuf) {
+        Preconditions.checkState(bodyBytes.length() == bodyLength);
+        Preconditions.checkState(bodyBytes.length() + getHeaderLength() == outputBuf.length(),//
+                "bodybytes length: " + bodyBytes.length() + " outputBuf length: " + outputBuf.length() + " header length: " + getHeaderLength());
+        System.arraycopy(bodyBytes.array(), bodyBytes.offset(), outputBuf.array(), getHeaderLength(), bodyLength);
+
+        //fill shard and cuboid
+        fillHeader(outputBuf.array());
     }
 
     @Override

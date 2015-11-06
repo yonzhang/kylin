@@ -31,6 +31,7 @@ import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.dict.Dictionary;
 import org.apache.kylin.dict.IDictionaryAware;
 import org.apache.kylin.metadata.model.IBuildable;
+import org.apache.kylin.metadata.model.IStorageAware;
 import org.apache.kylin.metadata.model.SegmentStatusEnum;
 import org.apache.kylin.metadata.model.TblColRef;
 
@@ -70,8 +71,6 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
     private String lastBuildJobID;
     @JsonProperty("create_time_utc")
     private long createTimeUTC;
-    @JsonProperty("enable_sharding")
-    private boolean enableSharding = true;
     @JsonProperty("cuboid_shard_nums")
     private Map<Long, Short> cuboidShardNums = Maps.newHashMap();
     @JsonProperty("total_shards")
@@ -372,15 +371,11 @@ public class CubeSegment implements Comparable<CubeSegment>, IDictionaryAware, I
     }
 
     public boolean isEnableSharding() {
-        return enableSharding;
-    }
-
-    public void setEnableSharding(boolean enableSharding) {
-        this.enableSharding = enableSharding;
+        return getCubeDesc().isEnableSharding();
     }
 
     public int getRowKeyPreambleSize() {
-        return enableSharding ? RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN : RowConstants.ROWKEY_CUBOIDID_LEN;
+        return isEnableSharding() ? RowConstants.ROWKEY_SHARD_AND_CUBOID_LEN : RowConstants.ROWKEY_CUBOIDID_LEN;
     }
 
     /**

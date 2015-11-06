@@ -20,6 +20,7 @@ package org.apache.kylin.cube.kv;
 
 import java.util.Map;
 
+import org.apache.kylin.common.util.ByteArray;
 import org.apache.kylin.common.util.ImmutableBitSet;
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.cube.cuboid.Cuboid;
@@ -39,9 +40,9 @@ public abstract class AbstractRowKeyEncoder {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRowKeyEncoder.class);
     public static final byte DEFAULT_BLANK_BYTE = Dictionary.NULL;
 
-    protected final Cuboid cuboid;
-    protected final CubeSegment cubeSeg;
     protected byte blankByte = DEFAULT_BLANK_BYTE;
+    protected final CubeSegment cubeSeg;
+    protected Cuboid cuboid;
 
     public static AbstractRowKeyEncoder createInstance(CubeSegment cubeSeg, Cuboid cuboid) {
         return new RowKeyEncoder(cubeSeg, cuboid);
@@ -60,6 +61,10 @@ public abstract class AbstractRowKeyEncoder {
         return cuboid.getId();
     }
 
+    public void setCuboid(Cuboid cuboid) {
+        this.cuboid = cuboid;
+    }
+
     abstract public byte[] createBuf();
 
     /**
@@ -69,6 +74,13 @@ public abstract class AbstractRowKeyEncoder {
      * @param buf
      */
     abstract public void encode(GTRecord record, ImmutableBitSet keyColumns, byte[] buf);
+
+    /**
+     * when a rowkey's body is provided, help to encode cuboid & shard (if apply)
+     * @param bodyBytes
+     * @param outputBuf
+     */
+    abstract public void encode(ByteArray bodyBytes, ByteArray outputBuf);
 
     abstract public byte[] encode(Map<TblColRef, String> valueMap);
 

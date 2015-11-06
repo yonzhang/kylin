@@ -39,12 +39,15 @@ public class BatchMergeJobBuilder extends JobBuilderSupport {
 
     public BatchMergeJobBuilder(CubeSegment mergeSegment, String submitter) {
         super(mergeSegment, submitter);
+
+        Preconditions.checkArgument(!mergeSegment.isEnableSharding(), "V1 job engine does not support merging sharded cubes");
+
         this.outputSide = MRUtil.getBatchMergeOutputSide(seg);
     }
 
     public CubingJob build() {
         logger.info("MR_V1 new job to MERGE segment " + seg);
-        
+
         final CubingJob result = CubingJob.createMergeJob(seg, submitter, config);
         final String jobId = result.getId();
         final String cuboidRootPath = getCuboidRootPath(jobId);

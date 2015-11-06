@@ -143,5 +143,6 @@
       }
     ]
   },
-  "notify_list": null
+  "notify_list": null,
+  "storage_type": 2
 }

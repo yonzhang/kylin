@@ -95,7 +95,7 @@ public class NDCuboidMapper extends KylinMapper<Text, Text, Text, Text> {
         long parentCuboidId = parentCuboid.getId();
         long childCuboidId = childCuboid.getId();
         long parentCuboidIdActualLength = Long.SIZE - Long.numberOfLeadingZeros(parentCuboid.getId());
-        int index = 2; // skip shard and cuboidId
+        int index = rowKeySplitter.getBodySplitOffset(); // skip shard and cuboidId
         for (int i = 0; i < parentCuboidIdActualLength; i++) {
             if ((mask & parentCuboidId) > 0) {// if the this bit position equals
                                               // 1

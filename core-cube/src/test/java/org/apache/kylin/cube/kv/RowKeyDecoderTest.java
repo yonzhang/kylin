@@ -90,10 +90,10 @@ public class RowKeyDecoderTest extends LocalFileMetadataTestCase {
 
         long baseCuboidId = Cuboid.getBaseCuboidId(cubeDesc);
         Cuboid baseCuboid = Cuboid.findById(cubeDesc, baseCuboidId);
-        AbstractRowKeyEncoder rowKeyEncoder = AbstractRowKeyEncoder.createInstance(cube.getFirstSegment(), baseCuboid);
+        RowKeyEncoder rowKeyEncoder = new RowKeyEncoder(cube.getFirstSegment(), baseCuboid);
 
         byte[] encodedKey = rowKeyEncoder.encode(data);
-        assertEquals(22 + RowConstants.ROWKEY_HEADER_LEN, encodedKey.length);
+        assertEquals(22 + rowKeyEncoder.getHeaderLength(), encodedKey.length);
 
         RowKeyDecoder rowKeyDecoder = new RowKeyDecoder(cube.getFirstSegment());
         rowKeyDecoder.decode(encodedKey);

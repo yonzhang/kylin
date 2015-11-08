@@ -18,27 +18,28 @@
 
 package org.apache.kylin.cube.kv;
 
+import java.util.HashMap;
+
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.cube.cuboid.Cuboid;
 
-/**
- * thread unsafe
- */
+import com.google.common.collect.Maps;
+
 public class RowKeyEncoderProvider {
-    
+
     private CubeSegment cubeSegment;
-    private RowKeyEncoder rowKeyEncoder;
+    private HashMap<Long, RowKeyEncoder> rowKeyEncoders;
 
     public RowKeyEncoderProvider(CubeSegment cubeSegment) {
         this.cubeSegment = cubeSegment;
+        this.rowKeyEncoders = Maps.newHashMap();
     }
 
-    public  RowKeyEncoder getRowkeyEncoder(Cuboid cuboid) {
+    public RowKeyEncoder getRowkeyEncoder(Cuboid cuboid) {
+        RowKeyEncoder rowKeyEncoder = rowKeyEncoders.get(cuboid.getId());
         if (rowKeyEncoder == null) {
             rowKeyEncoder = new RowKeyEncoder(cubeSegment, cuboid);
-        }
-        if (rowKeyEncoder.getCuboidID() != cuboid.getId()) {
-            rowKeyEncoder.setCuboid(cuboid);
+            rowKeyEncoders.put(cuboid.getId(), rowKeyEncoder);
         }
         return rowKeyEncoder;
     }

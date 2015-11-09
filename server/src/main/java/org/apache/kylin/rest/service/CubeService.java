@@ -55,6 +55,9 @@ import org.apache.kylin.metadata.realization.RealizationStatusEnum;
 import org.apache.kylin.metadata.realization.RealizationType;
 import org.apache.kylin.rest.constant.Constant;
 import org.apache.kylin.rest.exception.InternalErrorException;
+import org.apache.kylin.rest.helix.HelixJobEngineAdmin;
+import org.apache.kylin.rest.helix.JobControllerConstants;
+import org.apache.kylin.rest.helix.v1.JobEngineSMDV1;
 import org.apache.kylin.rest.request.MetricsRequest;
 import org.apache.kylin.rest.response.HBaseResponse;
 import org.apache.kylin.rest.response.MetricsResponse;
@@ -574,9 +577,12 @@ public class CubeService extends BasicService {
     public void updateOnNewSegmentReady(String cubeName) {
         logger.debug("on updateOnNewSegmentReady: " + cubeName);
         final KylinConfig kylinConfig = KylinConfig.getInstanceFromEnv();
-        String serverMode = kylinConfig.getServerMode();
-        logger.debug("server mode: " + serverMode);
-        if (Constant.SERVER_MODE_JOB.equals(serverMode.toLowerCase()) || Constant.SERVER_MODE_ALL.equals(serverMode.toLowerCase())) {
+        final String instanceState = HelixJobEngineAdmin.getInstance(kylinConfig.getZookeeperAddress()).
+                getInstanceState(kylinConfig.getHelixClusterName(), 
+                        JobControllerConstants.RESOURCE_NAME, 
+                        JobControllerConstants.INSTANCE_NAME);
+        logger.debug("server state: " + instanceState);
+        if (JobEngineSMDV1.States.LEADER.toString().equalsIgnoreCase(instanceState)) {
             keepCubeRetention(cubeName);
             mergeCubeSegment(cubeName);
         }

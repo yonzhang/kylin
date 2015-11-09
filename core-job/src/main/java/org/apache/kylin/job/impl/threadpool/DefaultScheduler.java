@@ -18,17 +18,7 @@
 
 package org.apache.kylin.job.impl.threadpool;
 
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
+import com.google.common.collect.Maps;
 import org.apache.kylin.job.Scheduler;
 import org.apache.kylin.job.constant.ExecutableConstants;
 import org.apache.kylin.job.engine.JobEngineConfig;
@@ -43,11 +33,12 @@ import org.apache.kylin.job.manager.ExecutableManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  */
-public class DefaultScheduler implements Scheduler<AbstractExecutable>, ConnectionStateListener {
+public class DefaultScheduler implements Scheduler<AbstractExecutable> {
 
     private ExecutableManager executableManager;
     private FetcherRunner fetcher;
@@ -55,12 +46,12 @@ public class DefaultScheduler implements Scheduler<AbstractExecutable>, Connecti
     private ExecutorService jobPool;
     private DefaultContext context;
 
-    private Logger logger = LoggerFactory.getLogger(DefaultScheduler.class);
+    private static Logger logger = LoggerFactory.getLogger(DefaultScheduler.class);
     private volatile boolean initialized = false;
     private volatile boolean hasStarted = false;
     private JobEngineConfig jobEngineConfig;
 
-    private static final DefaultScheduler INSTANCE = new DefaultScheduler();
+    private static DefaultScheduler INSTANCE;
 
     private DefaultScheduler() {
     }
@@ -134,21 +125,25 @@ public class DefaultScheduler implements Scheduler<AbstractExecutable>, Connecti
         }
     }
 
-    public static DefaultScheduler getInstance() {
+    public synchronized static DefaultScheduler createInstance() {
+        destroyInstance();
+        INSTANCE = new DefaultScheduler();
         return INSTANCE;
     }
-
-    @Override
-    public void stateChanged(CuratorFramework client, ConnectionState newState) {
-        if ((newState == ConnectionState.SUSPENDED) || (newState == ConnectionState.LOST)) {
+    
+    public synchronized static void destroyInstance() {
+        DefaultScheduler tmp = INSTANCE;
+        INSTANCE = null;
+        if (tmp != null) {
             try {
-                shutdown();
+                tmp.shutdown();
             } catch (SchedulerException e) {
-                throw new RuntimeException("failed to shutdown scheduler", e);
+                logger.error("error stop DefaultScheduler", e);
+                throw new RuntimeException(e);
             }
         }
     }
-
+    
     @Override
     public synchronized void init(JobEngineConfig jobEngineConfig, final JobLock jobLock) throws SchedulerException {
         if (!initialized) {
@@ -158,10 +153,6 @@ public class DefaultScheduler implements Scheduler<AbstractExecutable>, Connecti
         }
 
         this.jobEngineConfig = jobEngineConfig;
-
-        if (jobLock.lock() == false) {
-            throw new IllegalStateException("Cannot start job scheduler due to lack of job lock");
-        }
 
         executableManager = ExecutableManager.getInstance(jobEngineConfig.getConfig());
         //load all executable, set them to a consistent status
@@ -182,7 +173,6 @@ public class DefaultScheduler implements Scheduler<AbstractExecutable>, Connecti
                 logger.debug("Closing zk connection");
                 try {
                     shutdown();
-                    jobLock.unlock();
                 } catch (SchedulerException e) {
                     logger.error("error shutdown scheduler", e);
                 }
@@ -196,8 +186,12 @@ public class DefaultScheduler implements Scheduler<AbstractExecutable>, Connecti
 
     @Override
     public void shutdown() throws SchedulerException {
-        fetcherPool.shutdown();
-        jobPool.shutdown();
+        if (fetcherPool != null) {
+            fetcherPool.shutdown();
+        }
+        if (jobPool != null) {
+            jobPool.shutdown();
+        }
     }
 
     @Override

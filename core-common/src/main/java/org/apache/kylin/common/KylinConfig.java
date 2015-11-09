@@ -145,6 +145,8 @@ public class KylinConfig implements Serializable {
     public static final String VERSION = "${project.version}";
 
     public static final String HTABLE_DEFAULT_COMPRESSION_CODEC = "kylin.hbase.default.compression.codec";
+    
+    public static final String ZOOKEEPER_ADDRESS = "kylin.zookeeper.address";
 
     // static cached instances
     private static KylinConfig ENV_INSTANCE = null;
@@ -454,10 +456,6 @@ public class KylinConfig implements Serializable {
         return Long.parseLong(getOptional("kylin.job.step.timeout", String.valueOf(2 * 60 * 60)));
     }
 
-    public String getServerMode() {
-        return this.getOptional("kylin.server.mode", "all");
-    }
-
     public int getDictionaryMaxCardinality() {
         return Integer.parseInt(getOptional("kylin.dictionary.max.cardinality", "5000000"));
     }
@@ -684,6 +682,10 @@ public class KylinConfig implements Serializable {
     public void setStorageUrl(String storageUrl) {
         properties.setProperty(KYLIN_STORAGE_URL, storageUrl);
     }
+    
+    public String getZookeeperAddress() {
+        return properties.getProperty(ZOOKEEPER_ADDRESS);
+    }
 
     public String getHiveDatabaseForIntermediateTable() {
         return this.getOptional(HIVE_DATABASE_FOR_INTERMEDIATE_TABLE, "default");
@@ -755,6 +757,10 @@ public class KylinConfig implements Serializable {
 
     public String toString() {
         return getMetadataUrl();
+    }
+    
+    public String getHelixClusterName() {
+        return getMetadataUrlPrefix();
     }
 
 }

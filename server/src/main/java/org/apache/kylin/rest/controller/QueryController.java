@@ -67,7 +67,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Handle query requests.
- * 
+ *
  * @author xduo
  */
 @Controller
@@ -169,16 +169,15 @@ public class QueryController extends BasicController {
     private SQLResponse doQueryWithCache(SQLRequest sqlRequest) {
         try {
             BackdoorToggles.setToggles(sqlRequest.getBackdoorToggles());
-
             String sql = sqlRequest.getSql();
             String project = sqlRequest.getProject();
             logger.info("Using project: " + project);
             logger.info("The original query:  " + sql);
 
-            String serverMode = KylinConfig.getInstanceFromEnv().getServerMode();
-            if (!(Constant.SERVER_MODE_QUERY.equals(serverMode.toLowerCase()) || Constant.SERVER_MODE_ALL.equals(serverMode.toLowerCase()))) {
-                throw new InternalErrorException("Query is not allowed in " + serverMode + " mode.");
-            }
+//        String serverMode = KylinConfig.getInstanceFromEnv().getServerMode();
+//        if (!(Constant.SERVER_MODE_QUERY.equals(serverMode.toLowerCase()) || Constant.SERVER_MODE_ALL.equals(serverMode.toLowerCase()))) {
+//            throw new InternalErrorException("Query is not allowed in " + serverMode + " mode.");
+//        }
 
             if (!sql.toLowerCase().contains("select")) {
                 logger.debug("Directly return exception as not supported");

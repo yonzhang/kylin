@@ -18,22 +18,17 @@
 
 package org.apache.kylin.rest.controller;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
+import com.google.common.base.Preconditions;
 import org.apache.kylin.common.KylinConfig;
+import org.apache.kylin.common.util.HostnameUtils;
 import org.apache.kylin.job.JobInstance;
 import org.apache.kylin.job.constant.JobStatusEnum;
-import org.apache.kylin.job.engine.JobEngineConfig;
-import org.apache.kylin.job.impl.threadpool.DefaultScheduler;
 import org.apache.kylin.job.lock.JobLock;
-import org.apache.kylin.rest.constant.Constant;
 import org.apache.kylin.rest.exception.InternalErrorException;
+import org.apache.kylin.rest.helix.HelixJobEngineAdmin;
+import org.apache.kylin.rest.helix.JobControllerConnector;
+import org.apache.kylin.rest.helix.JobControllerConstants;
+import org.apache.kylin.rest.helix.v1.DefaultStateModelFactory;
 import org.apache.kylin.rest.request.JobListRequest;
 import org.apache.kylin.rest.service.JobService;
 import org.slf4j.Logger;
@@ -45,6 +40,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.IOException;
+import java.util.*;
+
+import static org.apache.kylin.rest.helix.JobControllerConstants.RESOURCE_NAME;
 
 /**
  * @author ysong1
@@ -61,7 +61,7 @@ public class JobController extends BasicController implements InitializingBean {
 
     @Autowired
     private JobLock jobLock;
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -76,27 +76,29 @@ public class JobController extends BasicController implements InitializingBean {
         TimeZone.setDefault(tzone);
 
         final KylinConfig kylinConfig = KylinConfig.getInstanceFromEnv();
-        String serverMode = kylinConfig.getServerMode();
 
-        if (Constant.SERVER_MODE_JOB.equals(serverMode.toLowerCase()) || Constant.SERVER_MODE_ALL.equals(serverMode.toLowerCase())) {
-            logger.info("Initializing Job Engine ....");
+        final String hostname = Preconditions.checkNotNull(HostnameUtils.getHostname());
+        final String port = JobControllerConstants.PARTICIPANT_PORT + "";
+        final String instanceName = JobControllerConstants.INSTANCE_NAME;
+        final String zkAddress = Preconditions.checkNotNull(kylinConfig.getZookeeperAddress());
+        HelixJobEngineAdmin helixJobEngineAdmin = HelixJobEngineAdmin.getInstance(zkAddress);
+        helixJobEngineAdmin.initV1(kylinConfig.getHelixClusterName(), JobControllerConstants.RESOURCE_NAME);
+        helixJobEngineAdmin.startControllers(kylinConfig.getHelixClusterName());
+        final JobControllerConnector jcc = new JobControllerConnector(hostname,
+                port,
+                zkAddress,
+                kylinConfig.getHelixClusterName(),
+                new DefaultStateModelFactory(instanceName, kylinConfig));
+        jcc.register();
+        helixJobEngineAdmin.rebalance(kylinConfig.getHelixClusterName(), RESOURCE_NAME);
+        jcc.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                jcc.stop();
+            }
+        }));
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        DefaultScheduler scheduler = DefaultScheduler.getInstance();
-                        scheduler.init(new JobEngineConfig(kylinConfig), jobLock);
-                        while (!scheduler.hasStarted()) {
-                            logger.error("scheduler has not been started");
-                            Thread.sleep(1000);
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }).start();
-        }
     }
 
     /**

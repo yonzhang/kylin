@@ -61,6 +61,13 @@ public class JobController extends BasicController implements InitializingBean {
 
     @Autowired
     private JobLock jobLock;
+    
+    public interface JobControllerListener {
+        
+        void onStartScheduler();
+        
+        void onStopScheduler();
+    }
 
     /*
      * (non-Javadoc)

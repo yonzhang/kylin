@@ -193,6 +193,7 @@ public class BuildCubeWithEngineTest {
                 return (List<String>) method.invoke(BuildCubeWithEngineTest.this);
             } catch (Exception e) {
                 logger.error(e.getMessage());
+                return null;
             } finally {
                 countDownLatch.countDown();
             }

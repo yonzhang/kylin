@@ -191,6 +191,8 @@ public class BuildCubeWithEngineTest {
                 final Method method = BuildCubeWithEngineTest.class.getDeclaredMethod(methodName);
                 method.setAccessible(true);
                 return (List<String>) method.invoke(BuildCubeWithEngineTest.this);
+            } catch (Exception e) {
+                logger.error(e.getMessage());
             } finally {
                 countDownLatch.countDown();
             }
@@ -260,12 +262,12 @@ public class BuildCubeWithEngineTest {
         long date4 = f.parse("2023-01-01").getTime();
 
         if (fastBuildMode) {
-            result.add(buildSegment("test_kylin_cube_without_slr_empty", date1, date4));
+            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date1, date4));
         } else {
-            result.add(buildSegment("test_kylin_cube_without_slr_empty", date1, date2));
-            result.add(buildSegment("test_kylin_cube_without_slr_empty", date2, date3));
-            result.add(buildSegment("test_kylin_cube_without_slr_empty", date3, date4));
-            result.add(mergeSegment("test_kylin_cube_without_slr_empty", date1, date3));//don't merge all segments
+            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date1, date2));
+            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date2, date3));
+            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date3, date4));
+            result.add(mergeSegment("test_kylin_cube_without_slr_left_join_empty", date1, date3));//don't merge all segments
         }
 
         return result;

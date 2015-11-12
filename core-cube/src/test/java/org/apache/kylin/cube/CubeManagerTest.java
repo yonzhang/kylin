@@ -58,16 +58,6 @@ public class CubeManagerTest extends LocalFileMetadataTestCase {
 
     @Test
     public void testBasics() throws Exception {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-        f.setTimeZone(TimeZone.getTimeZone("GMT"));
-        List<String> result = Lists.newArrayList();
-        final String cubeName = "test_kylin_cube_without_slr_left_join_empty";
-
-        long date1 = CubeManager.getInstance(getTestConfig()).getCube(cubeName).getDescriptor().getModel().getPartitionDesc().getPartitionDateStart();
-        long date2 = f.parse("2012-06-01").getTime();
-        long date3 = f.parse("2022-01-01").getTime();
-        long date4 = f.parse("2023-01-01").getTime();
-
         
         
         CubeInstance cube = CubeManager.getInstance(getTestConfig()).getCube("test_kylin_cube_without_slr_ready");

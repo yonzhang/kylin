@@ -193,7 +193,7 @@ public class BuildCubeWithEngineTest {
                 return (List<String>) method.invoke(BuildCubeWithEngineTest.this);
             } catch (Exception e) {
                 logger.error(e.getMessage());
-                return null;
+                throw e;
             } finally {
                 countDownLatch.countDown();
             }
@@ -207,18 +207,15 @@ public class BuildCubeWithEngineTest {
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         f.setTimeZone(TimeZone.getTimeZone("GMT"));
         long date1 = 0;
-        long date2 = f.parse("2013-01-01").getTime();
-        long date3 = f.parse("2013-07-01").getTime();
-        long date4 = f.parse("2022-01-01").getTime();
+        long date2 = f.parse("2015-01-01").getTime();
+        long date3 = f.parse("2022-01-01").getTime();
         List<String> result = Lists.newArrayList();
 
         if (fastBuildMode) {
-            result.add(buildSegment("test_kylin_cube_with_slr_empty", date1, date4));
+            result.add(buildSegment("test_kylin_cube_with_slr_empty", date1, date3));
         } else {
             result.add(buildSegment("test_kylin_cube_with_slr_empty", date1, date2));
-            result.add(buildSegment("test_kylin_cube_with_slr_empty", date2, date3));
-            result.add(buildSegment("test_kylin_cube_with_slr_empty", date3, date4));
-            result.add(mergeSegment("test_kylin_cube_with_slr_empty", date1, date3));//don't merge all segments
+            result.add(buildSegment("test_kylin_cube_with_slr_empty", date2, date3));//empty segment
         }
         return result;
     }
@@ -267,7 +264,7 @@ public class BuildCubeWithEngineTest {
         } else {
             result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date1, date2));
             result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date2, date3));
-            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date3, date4));
+            result.add(buildSegment("test_kylin_cube_without_slr_left_join_empty", date3, date4));//empty segment
             result.add(mergeSegment("test_kylin_cube_without_slr_left_join_empty", date1, date3));//don't merge all segments
         }
 
@@ -283,17 +280,19 @@ public class BuildCubeWithEngineTest {
 
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         f.setTimeZone(TimeZone.getTimeZone("GMT"));
-        long dateStart = cubeManager.getCube(cubeName).getDescriptor().getModel().getPartitionDesc().getPartitionDateStart();
-        long dateEnd = f.parse("2020-11-12").getTime();
-        long dateFuture = f.parse("2021-11-12").getTime();
+        long date1 = cubeManager.getCube(cubeName).getDescriptor().getModel().getPartitionDesc().getPartitionDateStart();
+        long date2 = f.parse("2013-01-01").getTime();
+        long date3 = f.parse("2013-07-01").getTime();
+        long date4 = f.parse("2022-01-01").getTime();
 
         List<String> result = Lists.newArrayList();
         if (fastBuildMode) {
-            result.add(buildSegment(cubeName, dateStart, dateFuture));
+            result.add(buildSegment(cubeName, date1, date4));
         } else {
-            result.add(buildSegment(cubeName, dateStart, dateEnd));
-            // build an empty segment which doesn't have data
-            result.add(buildSegment(cubeName, dateEnd, dateFuture));
+            result.add(buildSegment(cubeName, date1, date2));
+            result.add(buildSegment(cubeName, date2, date3));
+            result.add(buildSegment(cubeName, date3, date4));
+            result.add(mergeSegment(cubeName, date1, date3));//don't merge all segments
         }
         return result;
 

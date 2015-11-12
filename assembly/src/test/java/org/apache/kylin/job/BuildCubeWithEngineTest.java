@@ -62,7 +62,7 @@ public class BuildCubeWithEngineTest {
     private CubeManager cubeManager;
     private DefaultScheduler scheduler;
     protected ExecutableManager jobService;
-    private static boolean fastBuildMode = true;
+    private static boolean fastBuildMode = false;
 
     private static final Log logger = LogFactory.getLog(BuildCubeWithEngineTest.class);
 
@@ -87,8 +87,8 @@ public class BuildCubeWithEngineTest {
         ClassUtil.addClasspath(new File(HBaseMetadataTestCase.SANDBOX_TEST_DATA).getAbsolutePath());
 
         String fastModeStr = System.getProperty("fastBuildMode");
-        if (fastModeStr != null && fastModeStr.equalsIgnoreCase("false")) {
-            fastBuildMode = false;
+        if (fastModeStr != null && fastModeStr.equalsIgnoreCase("true")) {
+            fastBuildMode = true;
             logger.info("Will not use fast build mode");
         } else {
             logger.info("Will use fast build mode");

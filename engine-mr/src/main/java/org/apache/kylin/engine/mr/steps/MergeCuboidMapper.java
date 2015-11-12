@@ -240,7 +240,7 @@ public class MergeCuboidMapper extends KylinMapper<Text, Text, Text, Text> {
                 TopNCounter<ByteArray> topNCounters = (TopNCounter<ByteArray>) measureObjs[idx];
 
                 MeasureDesc measureDesc = measuresDescs.get(idx);
-                String displayCol = measureDesc.getFunction().getParameter().getDisplayColumn();
+                String displayCol = measureDesc.getFunction().getParameter().getDisplayColumn().toUpperCase();
                 TblColRef col = cubeDesc.findColumnRef(cubeDesc.getFactTable(), displayCol);
                 DictionaryManager dictMgr = DictionaryManager.getInstance(config);
                 Dictionary<?> sourceDict = dictMgr.getDictionary(sourceCubeSegment.getDictResPath(col));

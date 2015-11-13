@@ -51,10 +51,6 @@ public class Counter<T> implements Externalizable {
         return item;
     }
     
-    public void setItem(T item) {
-        this.item = item;
-    }
-
     public double getCount() {
         return count;
     }

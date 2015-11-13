@@ -89,9 +89,9 @@ public class BuildCubeWithEngineTest {
         String fastModeStr = System.getProperty("fastBuildMode");
         if (fastModeStr != null && fastModeStr.equalsIgnoreCase("true")) {
             fastBuildMode = true;
-            logger.info("Will not use fast build mode");
-        } else {
             logger.info("Will use fast build mode");
+        } else {
+            logger.info("Will not use fast build mode");
         }
 
         System.setProperty(KylinConfig.KYLIN_CONF, "../examples/test_case_data/sandbox");

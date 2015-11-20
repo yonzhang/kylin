@@ -136,7 +136,7 @@ public class CubeCapabilityChecker {
                 if (digest.groupbyColumns.contains(displayCol)) {
                     dimensionColumnsCopy.remove(displayCol);
                     if (isMatchedWithDimensions(dimensionColumnsCopy, cube)) {
-                        if (measure.getFunction().isCompatible(onlyFunction)) {
+                        if (measure.getFunction().isTopNCompatibleSum(onlyFunction)) {
                             return true;
                         }
                     }

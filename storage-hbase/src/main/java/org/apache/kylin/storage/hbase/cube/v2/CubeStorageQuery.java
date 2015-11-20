@@ -46,30 +46,18 @@ public class CubeStorageQuery implements ICachableStorageQuery {
 
     private final CubeInstance cubeInstance;
     private final CubeDesc cubeDesc;
-    private Collection<TblColRef> topNColumns;
 
     public CubeStorageQuery(CubeInstance cube) {
         this.cubeInstance = cube;
         this.cubeDesc = cube.getDescriptor();
-        this.topNColumns = Lists.newArrayList();
-        for (MeasureDesc measureDesc : cubeDesc.getMeasures()) {
-            if (measureDesc.getFunction().isTopN()) {
-                List<TblColRef> colRefs = measureDesc.getFunction().getParameter().getColRefs();
-                topNColumns.add(colRefs.get(colRefs.size() - 1));
-            }
-        }
     }
 
     @Override
     public ITupleIterator search(StorageContext context, SQLDigest sqlDigest, TupleInfo returnTupleInfo) {
-        // check whether this is a TopN query;
-        checkAndRewriteTopN(context, sqlDigest, returnTupleInfo);
+        // check whether this is a TopN query
+        checkAndRewriteTopN(sqlDigest);
 
         Collection<TblColRef> groups = sqlDigest.groupbyColumns;
-        TblColRef topNCol = extractTopNCol(groups);
-        if (topNCol != null)
-            groups.remove(topNCol);
-
         TupleFilter filter = sqlDigest.filter;
 
         // build dimension & metrics
@@ -145,10 +133,6 @@ public class CubeStorageQuery implements ICachableStorageQuery {
                 continue;
             }
             
-            // skip topN display col
-            if (topNColumns.contains(column)) {
-                continue;
-            }
             dimensions.add(column);
         }
     }
@@ -399,47 +383,33 @@ public class CubeStorageQuery implements ICachableStorageQuery {
     }
 
 
-    private void checkAndRewriteTopN(StorageContext context, SQLDigest sqlDigest, TupleInfo returnTupleInfo) {
-        Collection<TblColRef> groups = sqlDigest.groupbyColumns;
-        TblColRef topNDisplayCol = extractTopNCol(groups);
-        boolean hasTopN = topNDisplayCol != null;
-
-        if (hasTopN == false)
+    private void checkAndRewriteTopN(SQLDigest sqlDigest) {
+        FunctionDesc topnFunc = null;
+        TblColRef topnLiteralCol = null;
+        for (MeasureDesc measure : cubeDesc.getMeasures()) {
+            FunctionDesc func = measure.getFunction();
+            if (func.isTopN() && sqlDigest.groupbyColumns.contains(func.getTopNLiteralColumn())) {
+                topnFunc = func;
+                topnLiteralCol = func.getTopNLiteralColumn();
+            }
+        }
+        
+        // if TopN is not involved
+        if (topnFunc == null)
             return;
 
         if (sqlDigest.aggregations.size() != 1) {
             throw new IllegalStateException("When query with topN, only one metrics is allowed.");
         }
 
-        FunctionDesc functionDesc = sqlDigest.aggregations.iterator().next();
-        if (functionDesc.isSum() == false) {
+        FunctionDesc origFunc = sqlDigest.aggregations.iterator().next();
+        if (origFunc.isSum() == false) {
             throw new IllegalStateException("When query with topN, only SUM function is allowed.");
         }
 
-        FunctionDesc rewriteFunction = null;
-        // replace the SUM to the TopN function
-        for (MeasureDesc measureDesc : cubeDesc.getMeasures()) {
-            if (measureDesc.getFunction().isCompatible(functionDesc) && topNDisplayCol.getName().equalsIgnoreCase(measureDesc.getFunction().getParameter().getDisplayColumn())) {
-                rewriteFunction = measureDesc.getFunction();
-                break;
-            }
-        }
-
-        if (rewriteFunction == null) {
-            throw new IllegalStateException("Didn't find topN measure for " + functionDesc);
-        }
-
-        sqlDigest.aggregations = Lists.newArrayList(rewriteFunction);
-        logger.info("Rewrite function " + functionDesc + " to " + rewriteFunction);
-    }
-
-    private TblColRef extractTopNCol(Collection<TblColRef> colRefs) {
-        for (TblColRef colRef : colRefs) {
-            if (topNColumns.contains(colRef)) {
-                return colRef;
-            }
-        }
-
-        return null;
+        sqlDigest.aggregations = Lists.newArrayList(topnFunc);
+        sqlDigest.groupbyColumns.remove(topnLiteralCol);
+        sqlDigest.metricColumns.add(topnLiteralCol);
+        logger.info("Rewrite function " + origFunc + " to " + topnFunc);
     }
 }

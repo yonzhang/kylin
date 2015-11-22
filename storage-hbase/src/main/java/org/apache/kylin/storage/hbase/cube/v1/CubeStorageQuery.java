@@ -144,15 +144,15 @@ public class CubeStorageQuery implements ICachableStorageQuery {
         // check involved measures, build value decoder for each each family:column
         List<RowValueDecoder> valueDecoders = translateAggregation(cubeDesc.getHBaseMapping(), metrics, context);
 
-        //memory hungry distinct count are pushed down to coprocessor, no need to set threshold any more
-        //setThreshold(dimensionsD, valueDecoders, context); // set cautious threshold to prevent out of memory
+        // memory hungry distinct count are pushed down to coprocessor, no need to set threshold any more
+        // setThreshold(dimensionsD, valueDecoders, context); // set cautious threshold to prevent out of memory
         setCoprocessor(groupsCopD, valueDecoders, context); // enable coprocessor if beneficial
         setLimit(filter, context);
 
         HConnection conn = HBaseConnection.get(context.getConnUrl());
 
+        // notice we're passing filterD down to storage instead of flatFilter
         return new SerializedHBaseTupleIterator(conn, scans, cubeInstance, dimensionsD, filterD, groupsCopD, topNCol, valueDecoders, context, returnTupleInfo);
-        //Notice we're passing filterD down to storage instead of flatFilter
     }
 
     @Override

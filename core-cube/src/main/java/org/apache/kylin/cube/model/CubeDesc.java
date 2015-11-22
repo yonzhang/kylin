@@ -823,11 +823,4 @@ public class CubeDesc extends RootPersistentEntity {
         return result;
     }
 
-    public boolean hasMeasureUsingDictionary() {
-        for (MeasureDesc measureDesc : this.getMeasures()) {
-            if (measureDesc.getColumnsNeedDictionary().size() > 0)
-                return true;
-        }
-        return false;
-    }
 }

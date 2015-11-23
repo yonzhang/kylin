@@ -37,7 +37,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
-@SuppressWarnings("unused")
 public class CubeStorageQuery implements ICachableStorageQuery {
 
     private static final Logger logger = LoggerFactory.getLogger(CubeStorageQuery.class);
@@ -113,10 +112,22 @@ public class CubeStorageQuery implements ICachableStorageQuery {
         if (scanners.isEmpty())
             return ITupleIterator.EMPTY_TUPLE_ITERATOR;
 
+        return newSequentialCubeTupleIterator(scanners, cuboid, dimensionsD, metrics, returnTupleInfo, context);
+    }
+
+    private ITupleIterator newSequentialCubeTupleIterator(List<CubeSegmentScanner> scanners, Cuboid cuboid, Set<TblColRef> dimensionsD, Set<FunctionDesc> metrics, TupleInfo returnTupleInfo, StorageContext context) {
+        TblColRef topNCol = null;
+        for (FunctionDesc func : metrics) {
+            if (func.isTopN()) {
+                topNCol = func.getTopNLiteralColumn();
+                break;
+            }
+        }
+
         if (topNCol != null)
             return new SequentialCubeTopNTupleIterator(scanners, cuboid, dimensionsD, topNCol, metrics, returnTupleInfo, context);
-        
-        return new SequentialCubeTupleIterator(scanners, cuboid, dimensionsD, metrics, returnTupleInfo, context);
+        else
+            return new SequentialCubeTupleIterator(scanners, cuboid, dimensionsD, metrics, returnTupleInfo, context);
     }
 
     private void buildDimensionsAndMetrics(SQLDigest sqlDigest, Collection<TblColRef> dimensions, Collection<FunctionDesc> metrics) {
@@ -132,7 +143,7 @@ public class CubeStorageQuery implements ICachableStorageQuery {
             if (sqlDigest.metricColumns.contains(column)) {
                 continue;
             }
-            
+
             dimensions.add(column);
         }
     }
@@ -382,7 +393,6 @@ public class CubeStorageQuery implements ICachableStorageQuery {
         return false;
     }
 
-
     private void checkAndRewriteTopN(SQLDigest sqlDigest) {
         FunctionDesc topnFunc = null;
         TblColRef topnLiteralCol = null;
@@ -393,7 +403,7 @@ public class CubeStorageQuery implements ICachableStorageQuery {
                 topnLiteralCol = func.getTopNLiteralColumn();
             }
         }
-        
+
         // if TopN is not involved
         if (topnFunc == null)
             return;

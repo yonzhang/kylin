@@ -25,7 +25,7 @@ import org.apache.kylin.common.util.JsonUtil;
 import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.cube.model.validation.IValidatorRule;
 import org.apache.kylin.cube.model.validation.ValidateContext;
-import org.apache.kylin.cube.model.validation.rule.AggregationGroupSizeRule;
+import org.apache.kylin.cube.model.validation.rule.AggregationGroupRule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author jianliu
  * 
  */
-public class AggregationGroupSizeRuleTest {
+public class AggregationGroupRuleTest {
 
     private CubeDesc cube;
     private ValidateContext vContext = new ValidateContext();
@@ -50,7 +50,7 @@ public class AggregationGroupSizeRuleTest {
 
     @Test
     public void testOneMandatoryColumn() {
-        IValidatorRule<CubeDesc> rule = new AggregationGroupSizeRule() {
+        IValidatorRule<CubeDesc> rule = new AggregationGroupRule() {
             /*
              * (non-Javadoc)
              * 
@@ -75,7 +75,7 @@ public class AggregationGroupSizeRuleTest {
 
     @Test
     public void testAggColumnSize() {
-        AggregationGroupSizeRule rule = new AggregationGroupSizeRule() {
+        AggregationGroupRule rule = new AggregationGroupRule() {
             /*
              * (non-Javadoc)
              * 

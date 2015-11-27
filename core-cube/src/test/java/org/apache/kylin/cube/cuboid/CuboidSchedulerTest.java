@@ -83,34 +83,6 @@ public class CuboidSchedulerTest extends LocalFileMetadataTestCase {
         return getCubeDescManager().getCubeDesc("test_kylin_cube_without_slr_left_join_desc");
     }
 
-    @Test
-    public void testFindSmallerSibling1() {
-        CubeDesc cube = getTestKylinCubeWithoutSeller();
-        CuboidScheduler scheduler = new CuboidScheduler(cube);
-
-        Collection<Long> siblings;
-
-        siblings = scheduler.findSmallerSibling(255);
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(133);
-        assertEquals("[131]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(127);
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(134);
-        assertEquals("[131, 133]", sortToString(siblings));
-
-        siblings = scheduler.findSmallerSibling(130);
-        assertEquals("[129]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(5);
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(135);
-        assertEquals("[]", siblings.toString());
-    }
 
     private void testSpanningAndGetParent(CuboidScheduler scheduler, CubeDesc cube, long[] cuboidIds) {
         for (long cuboidId : cuboidIds) {
@@ -123,31 +95,6 @@ public class CuboidSchedulerTest extends LocalFileMetadataTestCase {
         }
     }
 
-    @Test
-    public void testFindSmallerSibling2() {
-        CubeDesc cube = getTestKylinCubeWithSeller();
-        CuboidScheduler scheduler = new CuboidScheduler(cube);
-
-        Collection<Long> siblings;
-
-        siblings = scheduler.findSmallerSibling(511);
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(toLong("110111111"));
-        assertEquals("[383]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(toLong("101110111"));
-        assertEquals("[319]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(toLong("111111000"));
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(toLong("111111000"));
-        assertEquals("[]", siblings.toString());
-
-        siblings = scheduler.findSmallerSibling(toLong("110000000"));
-        assertEquals("[288, 320]", sortToString(siblings));
-    }
 
     @Test
     public void testGetSpanningCuboid2() {
@@ -234,19 +181,19 @@ public class CuboidSchedulerTest extends LocalFileMetadataTestCase {
     @Test
     public void testCuboidGeneration1() {
         CubeDesc cube = getTestKylinCubeWithoutSeller();
-        CuboidCLI.simulateCuboidGeneration(cube);
+        CuboidCLI.simulateCuboidGeneration(cube, true);
     }
 
     @Test
     public void testCuboidGeneration2() {
         CubeDesc cube = getTestKylinCubeWithSeller();
-        CuboidCLI.simulateCuboidGeneration(cube);
+        CuboidCLI.simulateCuboidGeneration(cube, true);
     }
 
     @Test
     public void testCuboidGeneration3() {
         CubeDesc cube = getTestKylinCubeWithoutSellerLeftJoin();
-        CuboidCLI.simulateCuboidGeneration(cube);
+        CuboidCLI.simulateCuboidGeneration(cube, true);
     }
 
     @Test
@@ -264,6 +211,11 @@ public class CuboidSchedulerTest extends LocalFileMetadataTestCase {
         int[] counts = CuboidCLI.calculateAllLevelCount(cube);
         printCount(counts);
         assertArrayEquals(new int[] { 1, 4, 7, 8, 7, 4 }, counts);
+    }
+
+    @Test
+    public void testPotentialChild() {
+        assertEquals(1, 2);
     }
 
     private String sortToString(Collection<Long> longs) {

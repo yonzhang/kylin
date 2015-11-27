@@ -100,7 +100,7 @@ public class MetadataUpgradeTest extends LocalFileMetadataTestCase {
         Assert.assertTrue(dims.size() > 0);
 
         for (DimensionDesc dim : dims) {
-            Assert.assertTrue(dim.getColumn().length > 0);
+            Assert.assertTrue(dim.getColumn() != null);
         }
 
         Assert.assertTrue(cubedesc1.getMeasures().size() > 0);

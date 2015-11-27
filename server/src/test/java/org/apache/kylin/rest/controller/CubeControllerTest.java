@@ -89,7 +89,7 @@ public class CubeControllerTest extends ServiceTestBase {
         newCube.setModelName(cube.getModelName());
         newCube.setModel(cube.getModel());
         newCube.setDimensions(cube.getDimensions());
-        newCube.setHBaseMapping(cube.getHBaseMapping());
+        newCube.setHbaseMapping(cube.getHbaseMapping());
         newCube.setMeasures(cube.getMeasures());
         newCube.setConfig(cube.getConfig());
         newCube.setRowkey(cube.getRowkey());

@@ -18,7 +18,6 @@
 
 package org.apache.kylin.cube.model.validation.rule;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.cube.model.RowKeyColDesc;
 import org.apache.kylin.cube.model.RowKeyDesc;
@@ -28,9 +27,6 @@ import org.apache.kylin.cube.model.validation.ValidateContext;
 
 /**
  * Validate that only one of "length" and "dictionary" appears on rowkey_column
- * 
- * @author jianliu
- * 
  */
 public class RowKeyAttrRule implements IValidatorRule<CubeDesc> {
 
@@ -61,12 +57,12 @@ public class RowKeyAttrRule implements IValidatorRule<CubeDesc> {
 
         for (int i = 0; i < rcd.length; i++) {
             RowKeyColDesc rd = rcd[i];
-            if (rd.getLength() != 0 && (!StringUtils.isEmpty(rd.getDictionary()) && !rd.getDictionary().equals("false"))) {
-                context.addResult(ResultLevel.ERROR, "Rowkey column " + rd.getColumn() + " must not have both 'length' and 'dictionary' attribute");
-            }
-            if (rd.getLength() == 0 && (StringUtils.isEmpty(rd.getDictionary()) || rd.getDictionary().equals("false"))) {
-                context.addResult(ResultLevel.ERROR, "Rowkey column " + rd.getColumn() + " must not have both 'length' and 'dictionary' empty");
-            }
+            //            if (rd.getLength() != 0 && (!StringUtils.isEmpty(rd.getDictionary()) && !rd.getDictionary().equals("false"))) {
+            //                context.addResult(ResultLevel.ERROR, "Rowkey column " + rd.getColumn() + " must not have both 'length' and 'dictionary' attribute");
+            //            }
+            //            if (rd.getLength() == 0 && (StringUtils.isEmpty(rd.getDictionary()) || rd.getDictionary().equals("false"))) {
+            //                context.addResult(ResultLevel.ERROR, "Rowkey column " + rd.getColumn() + " must not have both 'length' and 'dictionary' empty");
+            //            }
         }
 
     }

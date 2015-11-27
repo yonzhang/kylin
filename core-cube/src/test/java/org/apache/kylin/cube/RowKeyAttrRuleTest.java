@@ -26,12 +26,14 @@ import org.apache.kylin.cube.model.validation.IValidatorRule;
 import org.apache.kylin.cube.model.validation.ValidateContext;
 import org.apache.kylin.cube.model.validation.rule.RowKeyAttrRule;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author jianliu
  * 
  */
+@Ignore
 public class RowKeyAttrRuleTest {
 
     private CubeDesc cube;

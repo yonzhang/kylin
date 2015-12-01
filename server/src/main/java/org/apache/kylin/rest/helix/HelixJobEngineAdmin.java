@@ -61,6 +61,7 @@ public class HelixJobEngineAdmin {
         if (!admin.getResourcesInCluster(clusterName).contains(resourceName)) {
             admin.addResource(clusterName, resourceName, 1, jobEngineSMDV1.getId(), "AUTO");
         }
+
     }
 
     public void startControllers(String clusterName) {
@@ -123,5 +124,9 @@ public class HelixJobEngineAdmin {
         admin.rebalance(clusterName, resourceName, instancesInCluster.size(), instancesInCluster);
         logger.info("cluster:" + clusterName + " ideal state:" + admin.getResourceIdealState(clusterName, resourceName));
         logger.info("cluster:" + clusterName + " instances:" + instancesInCluster);
+    }
+    
+    public List<String> getInstancesInCluster(String clusterName) {
+        return admin.getInstancesInCluster(clusterName);
     }
 }

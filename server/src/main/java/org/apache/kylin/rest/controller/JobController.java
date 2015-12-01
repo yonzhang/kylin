@@ -19,8 +19,9 @@
 package org.apache.kylin.rest.controller;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import joptsimple.internal.Strings;
 import org.apache.kylin.common.KylinConfig;
-import org.apache.kylin.common.util.HostnameUtils;
 import org.apache.kylin.job.JobInstance;
 import org.apache.kylin.job.constant.JobStatusEnum;
 import org.apache.kylin.job.lock.JobLock;
@@ -61,7 +62,7 @@ public class JobController extends BasicController implements InitializingBean {
 
     @Autowired
     private JobLock jobLock;
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -75,23 +76,26 @@ public class JobController extends BasicController implements InitializingBean {
         TimeZone tzone = TimeZone.getTimeZone(timeZone);
         TimeZone.setDefault(tzone);
 
+        if (System.getProperty("kylin.rest.address") == null) {
+            throw new RuntimeException("There is no -Dkylin.rest.address set; Please check bin/kylin.sh");
+        }
+
+        final String restAddress = System.getProperty("kylin.rest.address");
+        final String hostname = Preconditions.checkNotNull(restAddress.substring(0, restAddress.lastIndexOf(":")));
+        final String port = Preconditions.checkNotNull(restAddress.substring(restAddress.lastIndexOf(":") + 1));
+        final String instanceName = hostname + "_" + port;
         final KylinConfig kylinConfig = KylinConfig.getInstanceFromEnv();
 
-        final String hostname = Preconditions.checkNotNull(HostnameUtils.getHostname());
-        final String port = JobControllerConstants.PARTICIPANT_PORT + "";
-        final String instanceName = JobControllerConstants.INSTANCE_NAME;
         final String zkAddress = Preconditions.checkNotNull(kylinConfig.getZookeeperAddress());
         HelixJobEngineAdmin helixJobEngineAdmin = HelixJobEngineAdmin.getInstance(zkAddress);
         helixJobEngineAdmin.initV1(kylinConfig.getHelixClusterName(), JobControllerConstants.RESOURCE_NAME);
         helixJobEngineAdmin.startControllers(kylinConfig.getHelixClusterName());
-        final JobControllerConnector jcc = new JobControllerConnector(hostname,
-                port,
-                zkAddress,
-                kylinConfig.getHelixClusterName(),
-                new DefaultStateModelFactory(instanceName, kylinConfig));
+        final JobControllerConnector jcc = new JobControllerConnector(hostname, port, zkAddress, kylinConfig.getHelixClusterName(), new DefaultStateModelFactory(instanceName, kylinConfig));
         jcc.register();
         helixJobEngineAdmin.rebalance(kylinConfig.getHelixClusterName(), RESOURCE_NAME);
         jcc.start();
+
+        updateKylinConfig(helixJobEngineAdmin.getInstancesInCluster(kylinConfig.getHelixClusterName()));
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
@@ -206,6 +210,18 @@ public class JobController extends BasicController implements InitializingBean {
 
     public void setJobService(JobService jobService) {
         this.jobService = jobService;
+    }
+
+    private void updateKylinConfig(List<String> instances) {
+        List<String> instanceRestAddresses = Lists.newArrayList();
+        for (String instanceName : instances) {
+            int indexOfUnderscore = instanceName.lastIndexOf("_");
+            instanceRestAddresses.add(instanceName.substring(0, indexOfUnderscore) + ":" + instanceName.substring(indexOfUnderscore + 1));
+        }
+        String restServersInCluster = Strings.join(instanceRestAddresses, ",");
+        KylinConfig.getInstanceFromEnv().setProperty(KylinConfig.KYLIN_REST_SERVERS, restServersInCluster);
+        System.setProperty(KylinConfig.KYLIN_REST_SERVERS, restServersInCluster);
+
     }
 
 }

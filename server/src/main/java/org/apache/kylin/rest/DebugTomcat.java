@@ -29,6 +29,7 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.hadoop.util.Shell;
 import org.apache.kylin.common.KylinConfig;
+import org.apache.kylin.common.util.HostnameUtils;
 import org.apache.kylin.rest.util.ClasspathUtil;
 
 public class DebugTomcat {
@@ -43,6 +44,8 @@ public class DebugTomcat {
             overrideDevJobJarLocations();
 
             System.setProperty("spring.profiles.active", "testing");
+
+            System.setProperty("kylin.rest.address", HostnameUtils.getHostname() + ":" + "7070");
 
             //avoid log permission issue
             if (System.getProperty("catalina.home") == null)

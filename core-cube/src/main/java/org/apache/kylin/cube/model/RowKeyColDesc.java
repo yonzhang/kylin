@@ -101,7 +101,7 @@ public class RowKeyColDesc {
         if (this.colEncoding.type == ColEncodingType.FIXED_LEN) {
             return (Integer) this.colEncoding.param;
         } else {
-            throw new IllegalStateException("Not knowing the col's length");
+            throw new IllegalStateException("Not knowing the col's length, col: " + this.column + " encoding: " + this.encoding + " encoding type: " + this.colEncoding.type);
         }
     }
 

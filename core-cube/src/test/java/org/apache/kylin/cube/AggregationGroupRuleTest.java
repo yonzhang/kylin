@@ -21,84 +21,107 @@ package org.apache.kylin.cube;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.apache.kylin.common.util.JsonUtil;
 import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.cube.model.validation.IValidatorRule;
 import org.apache.kylin.cube.model.validation.ValidateContext;
 import org.apache.kylin.cube.model.validation.rule.AggregationGroupRule;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * @author jianliu
- * 
- */
-
-@Ignore
 public class AggregationGroupRuleTest {
 
-    private CubeDesc cube;
-    private ValidateContext vContext = new ValidateContext();
+    @Test
+    public void testGoodDesc() throws IOException {
+        AggregationGroupRule rule = getAggregationGroupRule();
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        CubeDesc desc2 = JsonUtil.readValue(getClass().getClassLoader().getResourceAsStream("data/TEST2_desc.json"), CubeDesc.class);
-        this.cube = desc2;
-
+        for (File f : new File("../examples/test_case_data/localmeta/cube_desc/").listFiles()) {
+            CubeDesc desc = JsonUtil.readValue(new FileInputStream(f), CubeDesc.class);
+            ValidateContext vContext = new ValidateContext();
+            rule.validate(desc, vContext);
+            vContext.print(System.out);
+            assertTrue(vContext.getResults().length == 0);
+        }
     }
 
     @Test
-    public void testOneMandatoryColumn() {
-        IValidatorRule<CubeDesc> rule = new AggregationGroupRule() {
-            /*
-             * (non-Javadoc)
-             * 
-             * @see
-             * org.apache.kylin.metadata.validation.rule.AggregationGroupSizeRule
-             * #getMaxAgrGroupSize()
-             */
+    public void testGoodBecomeBadDesc() throws IOException {
+        AggregationGroupRule rule = new AggregationGroupRule() {
             @Override
             protected int getMaxAgrGroupSize() {
-                return 3;
+                return 4;
             }
         };
-        rule.validate(cube, vContext);
-        vContext.print(System.out);
-        assertEquals("Failed to validate aggragation group error", vContext.getResults().length, 2);
-        assertTrue("Failed to validate aggragation group error", vContext.getResults()[0].getMessage().startsWith("Length of the number"));
-        assertTrue("Failed to validate aggragation group error", vContext.getResults()[1].getMessage().startsWith("Length of the number"));
-        // assertTrue("Failed to validate aggragation group error",
-        // vContext.getResults()[2].getMessage()
-        // .startsWith("Hierachy column"));
+
+        for (File f : new File("../examples/test_case_data/localmeta/cube_desc/").listFiles()) {
+            System.out.println(f.getName());
+            CubeDesc desc = JsonUtil.readValue(new FileInputStream(f), CubeDesc.class);
+            ValidateContext vContext = new ValidateContext();
+            rule.validate(desc, vContext);
+            vContext.print(System.out);
+            assertEquals(1, vContext.getResults().length);
+            assertEquals("Aggregation group 0 has too many dimensions", (vContext.getResults()[0].getMessage()));
+        }
     }
 
     @Test
-    public void testAggColumnSize() {
+    public void testGoodDesc2() throws IOException {
+
+        ValidateContext vContext = new ValidateContext();
+        CubeDesc desc = JsonUtil.readValue(new FileInputStream("../examples/test_case_data/localmeta/cube_desc/test_kylin_cube_with_slr_desc.json"), CubeDesc.class);
+        desc.getAggregationGroups().get(0).getSelectRule().joint_dims = new String[][] {//
+        new String[] { "lstg_format_name", "lstg_site_id", "slr_segment_cd", "CATEG_LVL2_NAME" } };
+
+        IValidatorRule<CubeDesc> rule = getAggregationGroupRule();
+        rule.validate(desc, vContext);
+        vContext.print(System.out);
+        assertEquals(0, vContext.getResults().length);
+    }
+
+    @Test
+    public void testBadDesc1() throws IOException {
+
+        ValidateContext vContext = new ValidateContext();
+        CubeDesc desc = JsonUtil.readValue(new FileInputStream("../examples/test_case_data/localmeta/cube_desc/test_kylin_cube_with_slr_desc.json"), CubeDesc.class);
+        String[] temp = Arrays.asList(desc.getAggregationGroups().get(0).getIncludes()).subList(0, 3).toArray(new String[3]);
+
+        desc.getAggregationGroups().get(0).setIncludes(temp);
+        IValidatorRule<CubeDesc> rule = getAggregationGroupRule();
+        rule.validate(desc, vContext);
+        vContext.print(System.out);
+        //        System.out.println(vContext.getResults().length);
+        //        System.out.println(vContext.getResults()[0].getMessage());
+        assertEquals(1, vContext.getResults().length);
+        assertEquals("Aggregation group 0 Include dims not containing all the used dims", (vContext.getResults()[0].getMessage()));
+    }
+
+    @Test
+    public void testBadDesc2() throws IOException {
+
+        ValidateContext vContext = new ValidateContext();
+        CubeDesc desc = JsonUtil.readValue(new FileInputStream("../examples/test_case_data/localmeta/cube_desc/test_kylin_cube_with_slr_desc.json"), CubeDesc.class);
+        desc.getAggregationGroups().get(0).getSelectRule().joint_dims = new String[][] {//
+        new String[] { "lstg_format_name", "lstg_site_id", "slr_segment_cd", "META_CATEG_NAME", "CATEG_LVL2_NAME" } };
+
+        IValidatorRule<CubeDesc> rule = getAggregationGroupRule();
+        rule.validate(desc, vContext);
+        vContext.print(System.out);
+        assertEquals(1, vContext.getResults().length);
+        assertEquals("Aggregation group 0 joint columns overlap with more than 1 dim in same hierarchy", (vContext.getResults()[0].getMessage()));
+    }
+
+    public AggregationGroupRule getAggregationGroupRule() {
         AggregationGroupRule rule = new AggregationGroupRule() {
-            /*
-             * (non-Javadoc)
-             * 
-             * @see
-             * org.apache.kylin.metadata.validation.rule.AggregationGroupSizeRule
-             * #getMaxAgrGroupSize()
-             */
             @Override
             protected int getMaxAgrGroupSize() {
                 return 20;
             }
         };
-        rule.validate(cube, vContext);
-        vContext.print(System.out);
-        assertEquals("Failed to validate aggragation group error", vContext.getResults().length, 0);
-        // assertTrue("Failed to validate aggragation group error",
-        // vContext.getResults()[0].getMessage()
-        // .startsWith("Aggregation group"));
-        // assertTrue("Failed to validate aggragation group error",
-        // vContext.getResults()[0].getMessage()
-        // .startsWith("Hierachy column"));
+
+        return rule;
     }
 }

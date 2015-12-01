@@ -81,7 +81,7 @@ public class ValidateContext {
      */
     public void print(PrintStream out) {
         if (results.isEmpty()) {
-            out.print("The element is perfect.");
+            out.println("The element is perfect.");
         }
         Iterator<Result> it = results.iterator();
         while (it.hasNext()) {

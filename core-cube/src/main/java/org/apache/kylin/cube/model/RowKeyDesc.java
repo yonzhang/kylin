@@ -90,10 +90,6 @@ public class RowKeyDesc {
         buildRowKey(colNameAbbr);
     }
 
-    public RowKeyColDesc[] getRowkeyColumns() {
-        return rowkeyColumns;
-    }
-
     public void setRowkeyColumns(RowKeyColDesc[] rowkeyColumns) {
         this.rowkeyColumns = rowkeyColumns;
     }

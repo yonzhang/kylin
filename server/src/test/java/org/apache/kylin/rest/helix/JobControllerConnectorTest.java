@@ -24,7 +24,6 @@ import org.I0Itec.zkclient.ZkServer;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 
-import static org.apache.kylin.rest.helix.JobControllerConstants.*;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.kylin.rest.helix.v1.TestJobEngineStateModelV1;
@@ -51,7 +50,8 @@ public class JobControllerConnectorTest {
 
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
+        System.setProperty("kylin.rest.address", "localhost:7070");
         // start zookeeper on localhost
         final File tmpDir = new File("/tmp/helix-quickstart");
         FileUtil.fullyDelete(tmpDir);
@@ -68,8 +68,8 @@ public class JobControllerConnectorTest {
         zkHelixAdmin.dropCluster(CLUSTER_NAME);
         connectors = Lists.newArrayList();
         helixJobEngineAdmin = HelixJobEngineAdmin.getInstance(zkAddress);
-        helixJobEngineAdmin.initV1(CLUSTER_NAME, RESOURCE_NAME);
-        helixJobEngineAdmin.startControllers(CLUSTER_NAME);
+        helixJobEngineAdmin.initV1(CLUSTER_NAME, HelixJobEngineAdmin.RESOURCE_NAME);
+        helixJobEngineAdmin.startController(CLUSTER_NAME, null);
 
     }
 
@@ -77,22 +77,22 @@ public class JobControllerConnectorTest {
     public void test() throws Exception {
         JobControllerConnector connector = new JobControllerConnector("localhost", "10000", zkAddress, CLUSTER_NAME, new TestStateModelFactory("localhost", "10000"));
         connector.register();
-        helixJobEngineAdmin.rebalance(CLUSTER_NAME, RESOURCE_NAME);
+        helixJobEngineAdmin.rebalance(CLUSTER_NAME, HelixJobEngineAdmin.RESOURCE_NAME);
         connector.start();
         connectors.add(connector);
         Thread.sleep(1000);
-        System.out.println(helixJobEngineAdmin.collectStateInfo("add 1 nodes", CLUSTER_NAME, RESOURCE_NAME));
+        System.out.println(helixJobEngineAdmin.collectStateInfo("add 1 nodes", CLUSTER_NAME, HelixJobEngineAdmin.RESOURCE_NAME));
         assertEquals(1, TestJobEngineStateModelV1.getLeaderCount().get());
         assertEquals(0, TestJobEngineStateModelV1.getStandbyCount().get());
         assertEquals(0, TestJobEngineStateModelV1.getOfflineCount().get());
 
         connector = new JobControllerConnector("localhost", "10001", zkAddress, CLUSTER_NAME, new TestStateModelFactory("localhost", "10001"));
         connector.register();
-        helixJobEngineAdmin.rebalance(CLUSTER_NAME, RESOURCE_NAME);
+        helixJobEngineAdmin.rebalance(CLUSTER_NAME, HelixJobEngineAdmin.RESOURCE_NAME);
         connector.start();
         connectors.add(connector);
         Thread.sleep(1000);
-        System.out.println(helixJobEngineAdmin.collectStateInfo("add 2 nodes", CLUSTER_NAME, RESOURCE_NAME));
+        System.out.println(helixJobEngineAdmin.collectStateInfo("add 2 nodes", CLUSTER_NAME, HelixJobEngineAdmin.RESOURCE_NAME));
         assertEquals(1, TestJobEngineStateModelV1.getLeaderCount().get());
         assertEquals(1, TestJobEngineStateModelV1.getStandbyCount().get());
         assertEquals(0, TestJobEngineStateModelV1.getOfflineCount().get());

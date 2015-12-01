@@ -21,15 +21,18 @@ package org.apache.kylin.rest.controller;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import joptsimple.internal.Strings;
+import org.apache.helix.ExternalViewChangeListener;
+import org.apache.helix.NotificationContext;
+import org.apache.helix.model.ExternalView;
 import org.apache.kylin.common.KylinConfig;
+import org.apache.kylin.common.restclient.Broadcaster;
 import org.apache.kylin.job.JobInstance;
 import org.apache.kylin.job.constant.JobStatusEnum;
-import org.apache.kylin.job.lock.JobLock;
 import org.apache.kylin.rest.exception.InternalErrorException;
 import org.apache.kylin.rest.helix.HelixJobEngineAdmin;
 import org.apache.kylin.rest.helix.JobControllerConnector;
-import org.apache.kylin.rest.helix.JobControllerConstants;
 import org.apache.kylin.rest.helix.v1.DefaultStateModelFactory;
+import org.apache.kylin.rest.helix.v1.JobEngineSMDV1;
 import org.apache.kylin.rest.request.JobListRequest;
 import org.apache.kylin.rest.service.JobService;
 import org.slf4j.Logger;
@@ -45,8 +48,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.IOException;
 import java.util.*;
 
-import static org.apache.kylin.rest.helix.JobControllerConstants.RESOURCE_NAME;
-
 /**
  * @author ysong1
  * @author Jack
@@ -59,9 +60,6 @@ public class JobController extends BasicController implements InitializingBean {
 
     @Autowired
     private JobService jobService;
-
-    @Autowired
-    private JobLock jobLock;
 
     /*
      * (non-Javadoc)
@@ -76,30 +74,47 @@ public class JobController extends BasicController implements InitializingBean {
         TimeZone tzone = TimeZone.getTimeZone(timeZone);
         TimeZone.setDefault(tzone);
 
-        if (System.getProperty("kylin.rest.address") == null) {
-            throw new RuntimeException("There is no -Dkylin.rest.address set; Please check bin/kylin.sh");
-        }
-
-        final String restAddress = System.getProperty("kylin.rest.address");
-        final String hostname = Preconditions.checkNotNull(restAddress.substring(0, restAddress.lastIndexOf(":")));
-        final String port = Preconditions.checkNotNull(restAddress.substring(restAddress.lastIndexOf(":") + 1));
-        final String instanceName = hostname + "_" + port;
+        final String instanceName = HelixJobEngineAdmin.getCurrentInstanceName();
         final KylinConfig kylinConfig = KylinConfig.getInstanceFromEnv();
 
         final String zkAddress = Preconditions.checkNotNull(kylinConfig.getZookeeperAddress());
-        HelixJobEngineAdmin helixJobEngineAdmin = HelixJobEngineAdmin.getInstance(zkAddress);
-        helixJobEngineAdmin.initV1(kylinConfig.getHelixClusterName(), JobControllerConstants.RESOURCE_NAME);
-        helixJobEngineAdmin.startControllers(kylinConfig.getHelixClusterName());
-        final JobControllerConnector jcc = new JobControllerConnector(hostname, port, zkAddress, kylinConfig.getHelixClusterName(), new DefaultStateModelFactory(instanceName, kylinConfig));
+        final HelixJobEngineAdmin helixJobEngineAdmin = HelixJobEngineAdmin.getInstance(zkAddress);
+        helixJobEngineAdmin.initV1(kylinConfig.getClusterName(), HelixJobEngineAdmin.RESOURCE_NAME);
+        helixJobEngineAdmin.startController(kylinConfig.getClusterName(), new ExternalViewChangeListener() {
+            @Override
+            public void onExternalViewChange(List<ExternalView> list, NotificationContext notificationContext) {
+                for (ExternalView view : list) {
+                    if (view.getResourceName().equals(HelixJobEngineAdmin.RESOURCE_NAME)) {
+                        final Set<String> partitionSet = view.getPartitionSet();
+                        Preconditions.checkArgument(partitionSet.size() == 1);
+                        final Map<String, String> stateMap = view.getStateMap(partitionSet.iterator().next());
+
+                        List<String> liveInstances = Lists.newArrayList();
+                        for (String instance : stateMap.keySet()) {
+                            String state = stateMap.get(instance);
+                            if (JobEngineSMDV1.States.LEADER.toString().equalsIgnoreCase(state)
+                                    || JobEngineSMDV1.States.STANDBY.toString().equalsIgnoreCase(state)) {
+                                liveInstances.add(instance);
+                            }
+                        }
+
+                        updateKylinCluster(liveInstances);
+                    }
+                }
+            }
+        });
+        final String hostname = instanceName.substring(0, instanceName.lastIndexOf("_"));
+        final String port = instanceName.substring(instanceName.lastIndexOf("_") + 1);
+        final JobControllerConnector jcc = new JobControllerConnector(hostname, port, zkAddress, kylinConfig.getClusterName(), new DefaultStateModelFactory(instanceName, kylinConfig));
         jcc.register();
-        helixJobEngineAdmin.rebalance(kylinConfig.getHelixClusterName(), RESOURCE_NAME);
+        helixJobEngineAdmin.rebalance(kylinConfig.getClusterName(), HelixJobEngineAdmin.RESOURCE_NAME);
         jcc.start();
 
-        updateKylinConfig(helixJobEngineAdmin.getInstancesInCluster(kylinConfig.getHelixClusterName()));
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 jcc.stop();
+                helixJobEngineAdmin.stopController(kylinConfig.getClusterName());
             }
         }));
 
@@ -212,7 +227,7 @@ public class JobController extends BasicController implements InitializingBean {
         this.jobService = jobService;
     }
 
-    private void updateKylinConfig(List<String> instances) {
+    private void updateKylinCluster(List<String> instances) {
         List<String> instanceRestAddresses = Lists.newArrayList();
         for (String instanceName : instances) {
             int indexOfUnderscore = instanceName.lastIndexOf("_");
@@ -221,6 +236,7 @@ public class JobController extends BasicController implements InitializingBean {
         String restServersInCluster = Strings.join(instanceRestAddresses, ",");
         KylinConfig.getInstanceFromEnv().setProperty(KylinConfig.KYLIN_REST_SERVERS, restServersInCluster);
         System.setProperty(KylinConfig.KYLIN_REST_SERVERS, restServersInCluster);
+        Broadcaster.clearCache();
 
     }
 

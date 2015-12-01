@@ -759,8 +759,8 @@ public class KylinConfig implements Serializable {
         return getMetadataUrl();
     }
     
-    public String getHelixClusterName() {
-        return getMetadataUrlPrefix();
+    public String getClusterName() {
+        return this.getOptional("kylin.cluster.name", getMetadataUrlPrefix());
     }
 
 }

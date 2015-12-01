@@ -18,7 +18,11 @@
 package org.apache.kylin.rest.helix;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.helix.ExternalViewChangeListener;
+import org.apache.helix.HelixManager;
 import org.apache.helix.controller.HelixControllerMain;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.model.ExternalView;
@@ -34,13 +38,28 @@ import java.util.concurrent.ConcurrentMap;
 /**
  */
 public class HelixJobEngineAdmin {
+
+    public static final String RESOURCE_NAME = "job_engine_v1";
+    
     
     private static ConcurrentMap<String, HelixJobEngineAdmin> instanceMaps = Maps.newConcurrentMap();
+    private static ConcurrentMap<String, HelixManager> controllerMaps = Maps.newConcurrentMap();
     
     public static HelixJobEngineAdmin getInstance(String zkAddress) {
         Preconditions.checkNotNull(zkAddress);
         instanceMaps.putIfAbsent(zkAddress, new HelixJobEngineAdmin(zkAddress));
         return instanceMaps.get(zkAddress);
+    }
+
+    public static String getCurrentInstanceName() {
+        final String restAddress = System.getProperty("kylin.rest.address");
+        if (StringUtils.isEmpty(restAddress)) {
+            throw new RuntimeException("There is no -Dkylin.rest.address set; Please check bin/kylin.sh");
+        }
+
+        final String hostname = Preconditions.checkNotNull(restAddress.substring(0, restAddress.lastIndexOf(":")));
+        final String port = Preconditions.checkNotNull(restAddress.substring(restAddress.lastIndexOf(":") + 1));
+        return hostname + "_" + port;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(HelixJobEngineAdmin.class);
@@ -51,7 +70,6 @@ public class HelixJobEngineAdmin {
         this.zkAddress = zkAddress;
         this.admin = new ZKHelixAdmin(zkAddress);
     }
-
     public void initV1(String clusterName, String resourceName) {
         final StateModelDefinition jobEngineSMDV1 = JobEngineSMDV1.getJobEngineStateModelDefinitionV1();
         admin.addCluster(clusterName, false);
@@ -64,9 +82,22 @@ public class HelixJobEngineAdmin {
 
     }
 
-    public void startControllers(String clusterName) {
-        HelixControllerMain.startHelixController(zkAddress, clusterName, "localhost_" + JobControllerConstants.CONTROLLER_PORT,
+    public void startController(String clusterName, ExternalViewChangeListener externalViewChangeListener) throws Exception {
+        HelixManager manager = HelixControllerMain.startHelixController(zkAddress, clusterName, getCurrentInstanceName(),
                 HelixControllerMain.STANDALONE);
+        controllerMaps.put(clusterName, manager);
+        manager.connect();
+        if (externalViewChangeListener != null) {
+            manager.addExternalViewChangeListener(externalViewChangeListener);
+        }
+    }
+    
+    public void stopController(String clusterName) {
+        if (controllerMaps.containsKey(clusterName)) {
+            controllerMaps.remove(clusterName).disconnect();
+        } else {
+            throw new IllegalArgumentException("Didn't find HelixManager with clusterName '" + clusterName + "'.");
+        }
     }
 
     public String getInstanceState(String clusterName, String resourceName, String instanceName) {
@@ -126,7 +157,16 @@ public class HelixJobEngineAdmin {
         logger.info("cluster:" + clusterName + " instances:" + instancesInCluster);
     }
     
-    public List<String> getInstancesInCluster(String clusterName) {
-        return admin.getInstancesInCluster(clusterName);
+    public boolean isLeaderRole(String clusterName, String instanceName) {
+        final String instanceState = 
+                getInstanceState(clusterName,
+                        HelixJobEngineAdmin.RESOURCE_NAME,
+                        instanceName);
+        logger.debug("instance state: " + instanceState);
+        if (JobEngineSMDV1.States.LEADER.toString().equalsIgnoreCase(instanceState)) {
+            return true;
+        }
+        
+        return false;
     }
 }

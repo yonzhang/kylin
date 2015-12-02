@@ -157,7 +157,7 @@ public class Cuboid implements Comparable<Cuboid> {
             return cuboidID;
         } else {
             // no column, add one column
-            long nonJointDims = removeBits(agg.getPartialCubeFullMask(), agg.getJoints());
+            long nonJointDims = removeBits((agg.getPartialCubeFullMask() ^ agg.getMandatoryColumnMask()), agg.getJoints());
             if (nonJointDims != 0) {
                 long nonJointNonHierarchy = removeBits(nonJointDims, Collections2.transform(agg.getHierarchyMasks(), new Function<HierarchyMask, Long>() {
                     @Override

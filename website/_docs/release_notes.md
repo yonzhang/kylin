@@ -7,16 +7,16 @@ version: v1.0
 since: v0.7.1
 ---
 
-To download latest release, please visit: [http://kylin.incubator.apache.org/download/](http://kylin.incubator.apache.org/download/), there are source code package, binary package, ODBC driver and installation guide avaliable.
+To download latest release, please visit: [http://kylin.apache.org/download/](http://kylin.apache.org/download/), there are source code package, binary package, ODBC driver and installation guide avaliable.
 
 Any problem or issue, please report to Apache Kylin JIRA project: [https://issues.apache.org/jira/browse/KYLIN](https://issues.apache.org/jira/browse/KYLIN)
 
 or send to Apache Kylin mailing list:   
-* User relative: [user@kylin.incubator.apache.org](mailto:user@kylin.incubator.apache.org)
-* Development relative: [dev@kylin.incubator.apache.org](mailto:dev@kylin.incubator.apache.org)
+* User relative: [user@kylin.apache.org](mailto:user@kylin.apache.org)
+* Development relative: [dev@kylin.apache.org](mailto:dev@kylin.apache.org)
 
 ## v1.0-incubating - 2015-09-06
-_Tag:_ [kylin-1.0-incubating](https://github.com/apache/incubator-kylin/tree/kylin-1.0-incubating)
+_Tag:_ [kylin-1.0-incubating](https://github.com/apache/kylin/tree/kylin-1.0-incubating)
 
 __New Feature__
 
@@ -78,7 +78,7 @@ __Task__
     * [KYLIN-931] - Port KYLIN-921 to 0.8 branch
 
 ## v0.7.2-incubating - 2015-07-21
-_Tag:_ [kylin-0.7.2-incubating](https://github.com/apache/incubator-kylin/tree/kylin-0.7.2-incubating)
+_Tag:_ [kylin-0.7.2-incubating](https://github.com/apache/kylin/tree/kylin-0.7.2-incubating)
 
 __Main Changes:__  
 Critical bug fixes after v0.7.1 release, please go with this version directly for new case and upgrade to this version for existing deployment.
@@ -134,7 +134,7 @@ __Task__
     * [KYLIN-812] - Upgrade to Calcite 0.9.2
 
 ## v0.7.1-incubating (First Apache Release) - 2015-06-10  
-_Tag:_ [kylin-0.7.1-incubating](https://github.com/apache/incubator-kylin/tree/kylin-0.7.1-incubating)
+_Tag:_ [kylin-0.7.1-incubating](https://github.com/apache/kylin/tree/kylin-0.7.1-incubating)
 
 Apache Kylin v0.7.1-incubating has rolled out on June 10, 2015. This is also the first Apache release after join incubating. 
 

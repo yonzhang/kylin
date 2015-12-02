@@ -153,7 +153,7 @@ public class Cuboid implements Comparable<Cuboid> {
             }
         }
 
-        if (cuboidID != 0) {
+        if ((cuboidID & ~agg.getMandatoryColumnMask()) != 0) {
             return cuboidID;
         } else {
             // no column, add one column
@@ -167,7 +167,7 @@ public class Cuboid implements Comparable<Cuboid> {
                 }));
                 if (nonJointNonHierarchy != 0) {
                     //there exists dim that does not belong to any joint or any hierarchy, that's perfect
-                    return Long.lowestOneBit(nonJointNonHierarchy);
+                    return cuboidID | Long.lowestOneBit(nonJointNonHierarchy);
                 } else {
                     //choose from a hierarchy that does not intersect with any joint dim, only check level 1 
                     long allJointDims = agg.getJointDimsMask();
@@ -175,13 +175,13 @@ public class Cuboid implements Comparable<Cuboid> {
                     for (HierarchyMask hierarchyMask : agg.getHierarchyMasks()) {
                         long dim = hierarchyMask.allMasks[index];
                         if ((nonJointDims & allJointDims) == 0) {
-                            return dim;
+                            return cuboidID | dim;
                         }
                     }
                 }
             }
 
-            return Collections.min(agg.getJoints(), cuboidSelectComparator);
+            return cuboidID | Collections.min(agg.getJoints(), cuboidSelectComparator);
         }
     }
 

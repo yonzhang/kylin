@@ -281,14 +281,20 @@ public class KylinConfig implements Serializable {
         return getOptional(KYLIN_STORAGE_URL);
     }
 
+    /** was for route to hive, not used any more */
+    @Deprecated
     public String getHiveUrl() {
         return getOptional(HIVE_URL, "");
     }
 
+    /** was for route to hive, not used any more */
+    @Deprecated
     public String getHiveUser() {
         return getOptional(HIVE_USER, "");
     }
 
+    /** was for route to hive, not used any more */
+    @Deprecated
     public String getHivePassword() {
         return getOptional(HIVE_PASSWORD, "");
     }
@@ -303,6 +309,10 @@ public class KylinConfig implements Serializable {
 
     public String getHBaseClusterFs() {
         return getOptional(KYLIN_HBASE_CLUSTER_FS, "");
+    }
+    
+    public String[] getMeasureTypeFactories() {
+        return getOptionalStringArray("kylin.measure.type.factories", new String[0]);
     }
 
     public String getKylinJobLogDir() {
@@ -447,7 +457,7 @@ public class KylinConfig implements Serializable {
     }
 
     public String[] getRestServers() {
-        return getOptionalStringArray(KYLIN_REST_SERVERS);
+        return getOptionalStringArray(KYLIN_REST_SERVERS, new String[0]);
     }
 
     public String getAdminDls() {
@@ -530,12 +540,12 @@ public class KylinConfig implements Serializable {
         return property != null ? property : properties.getProperty(prop);
     }
 
-    private String[] getOptionalStringArray(String prop) {
+    private String[] getOptionalStringArray(String prop, String[] dft) {
         final String property = getOptional(prop);
         if (!StringUtils.isBlank(property)) {
             return property.split("\\s*,\\s*");
         } else {
-            return new String[] {};
+            return dft;
         }
     }
 

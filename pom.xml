@@ -463,7 +463,16 @@
 	           	<artifactId>httpclient</artifactId>
  	          	<version>${apache-httpclient.version}</version>
  	     	</dependency>
-
+            <dependency>
+                <groupId>org.apache.helix</groupId>
+                <artifactId>helix-core</artifactId>
+                <version>${helix.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.helix</groupId>
+                <artifactId>helix-examples</artifactId>
+                <version>${helix.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

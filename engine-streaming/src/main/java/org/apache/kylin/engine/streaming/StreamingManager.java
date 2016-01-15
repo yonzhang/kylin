@@ -137,6 +137,12 @@ public class StreamingManager {
         return streamingMap.get(name);
     }
 
+    public StreamingConfig getStreamingConfigByCube(String cubeName) {
+        String streamingConfig = cubeName + "_streaming";
+        return getStreamingConfig(streamingConfig);
+    }
+
+
     public List<StreamingConfig> listAllStreaming() {
         return new ArrayList<>(streamingMap.values());
     }
@@ -166,11 +172,6 @@ public class StreamingManager {
         String path = streamingConfig.getResourcePath();
         getStore().deleteResource(path);
         streamingMap.remove(streamingConfig.getName());
-    }
-
-    public StreamingConfig getConfig(String name) {
-        name = name.toUpperCase();
-        return streamingMap.get(name);
     }
 
     public void removeStreamingLocal(String streamingName) {

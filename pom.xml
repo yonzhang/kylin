@@ -619,6 +619,7 @@
         <module>jdbc</module>
         <module>invertedindex</module>
         <module>assembly</module>
+        <module>kylin-it</module>
     </modules>
 
     <profiles>
@@ -639,6 +640,7 @@
                             <maxmem>2048m</maxmem>
                         </configuration>
                     </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -651,77 +653,18 @@
                             <systemProperties>
                                 <property>
                                     <name>useSandbox</name>
-                                    <value>true</value>
+                                    <value>false</value>
                                 </property>
-                            </systemProperties>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.16</version>
-                        <executions>
-                            <execution>
-                                <id>integration-tests</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*$*</exclude>
-                                <exclude>**/ITKafka*.java</exclude>
-                            </excludes>
-                            <systemProperties>
                                 <property>
-                                    <name>useSandbox</name>
-                                    <value>true</value>
+                                    <name>buildCubeUsingProvidedData</name>
+                                    <value>false</value>
                                 </property>
                             </systemProperties>
+                            <argLine>-Xms1G -Xmx4G -XX:PermSize=128M -XX:MaxPermSize=512M</argLine>
                         </configuration>
                     </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>build_cube_with_engine</id>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <phase>pre-integration-test</phase>
-                                <configuration>
-                                    <classpathScope>test</classpathScope>
-                                    <mainClass>org.apache.kylin.job.BuildCubeWithEngine</mainClass>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>build_cube_with_stream</id>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <phase>pre-integration-test</phase>
-                                <configuration>
-                                    <classpathScope>test</classpathScope>
-                                    <mainClass>org.apache.kylin.job.BuildCubeWithStream</mainClass>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>build_ii_with_stream</id>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <phase>pre-integration-test</phase>
-                                <configuration>
-                                    <classpathScope>test</classpathScope>
-                                    <mainClass>org.apache.kylin.job.BuildIIWithStream</mainClass>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
+
+
                 </plugins>
             </build>
         </profile>
@@ -761,30 +704,6 @@
                         </executions>
                     </plugin>
 
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.16</version>
-                        <configuration>
-                            <reportsDirectory>${project.basedir}/../target/surefire-reports</reportsDirectory>
-                            <excludes>
-                                <excludes>
-                                    <exclude>**/IT*.java</exclude>
-                                </excludes>
-                            </excludes>
-                            <systemProperties>
-                                <property>
-                                    <name>useSandbox</name>
-                                    <value>false</value>
-                                </property>
-                                <property>
-                                    <name>buildCubeUsingProvidedData</name>
-                                    <value>false</value>
-                                </property>
-                            </systemProperties>
-                            <argLine>-Xms1G -Xmx4G -XX:PermSize=128M -XX:MaxPermSize=512M</argLine>
-                        </configuration>
-                    </plugin>
                     <!-- Apache-RAT checks for files without headers.
                          If run on a messy developer's sandbox, it will fail.
                          This serves as a reminder to only build a release in a clean

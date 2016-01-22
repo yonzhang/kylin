@@ -19,10 +19,7 @@
 package org.apache.kylin.common.util;
 
 import java.io.File;
-
 import org.apache.kylin.common.KylinConfig;
-import org.apache.kylin.common.util.AbstractKylinTestCase;
-import org.apache.kylin.common.util.ClassUtil;
 
 /**
  * @author ysong1

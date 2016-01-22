@@ -76,8 +76,8 @@ public class ITJDBCDriverTest extends HBaseMetadataTestCase {
         server = new Server(7070);
 
         WebAppContext context = new WebAppContext();
-        context.setDescriptor("./src/main/webapp/WEB-INF/web.xml");
-        context.setResourceBase("./src/main/webapp");
+        context.setDescriptor("../server/src/main/webapp/WEB-INF/web.xml");
+        context.setResourceBase("../server/src/main/webapp");
         context.setContextPath("/kylin");
         context.setParentLoaderPriority(true);
 

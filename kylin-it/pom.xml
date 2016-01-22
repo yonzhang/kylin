@@ -31,6 +31,11 @@
     <name>Kylin:IT</name>
 
 
+
+    <properties>
+        <hdp.version></hdp.version>
+    </properties>
+
     <!-- Dependencies. -->
     <dependencies>
         <dependency>
@@ -265,6 +270,7 @@
                                     <classpathScope>test</classpathScope>
                                     <executable>java</executable>
                                     <arguments>
+                                        <argument>-Dhdp.version=${hdp.version}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildCubeWithEngine</argument>
@@ -283,6 +289,7 @@
                                     <classpathScope>test</classpathScope>
                                     <executable>java</executable>
                                     <arguments>
+                                        <argument>-Dhdp.version=${hdp.version}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildCubeWithStream</argument>
@@ -301,6 +308,7 @@
                                     <classpathScope>test</classpathScope>
                                     <executable>java</executable>
                                     <arguments>
+                                        <argument>-Dhdp.version=${hdp.version}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildIIWithStream</argument>

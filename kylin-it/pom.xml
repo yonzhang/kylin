@@ -31,9 +31,9 @@
     <name>Kylin:IT</name>
 
 
-
     <properties>
         <hdp.version></hdp.version>
+        <fastBuildMode></fastBuildMode>
     </properties>
 
     <!-- Dependencies. -->
@@ -295,6 +295,7 @@
                                     <executable>java</executable>
                                     <arguments>
                                         <argument>-Dhdp.version=${hdp.version}</argument>
+                                        <argument>-DfastBuildMode=${fastBuildMode}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildCubeWithEngine</argument>
@@ -314,6 +315,7 @@
                                     <executable>java</executable>
                                     <arguments>
                                         <argument>-Dhdp.version=${hdp.version}</argument>
+                                        <argument>-DfastBuildMode=${fastBuildMode}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildCubeWithStream</argument>
@@ -333,6 +335,7 @@
                                     <executable>java</executable>
                                     <arguments>
                                         <argument>-Dhdp.version=${hdp.version}</argument>
+                                        <argument>-DfastBuildMode=${fastBuildMode}</argument>
                                         <argument>-classpath</argument>
                                         <classpath/>
                                         <argument>org.apache.kylin.provision.BuildIIWithStream</argument>

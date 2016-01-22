@@ -18,8 +18,6 @@
 
 package org.apache.kylin.provision;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -127,7 +125,10 @@ public class BuildCubeWithSpark {
         final DefaultChainedExecutable cubingJob = new SparkBatchCubingEngine(confPath, coprocessor).createBatchCubingJob(segment, "BuildCubeWithSpark");
         jobService.addJob(cubingJob);
         waitForJob(cubingJob.getId());
-        assertEquals(ExecutableState.SUCCEED, jobService.getOutput(cubingJob.getId()).getState());
+
+        if (jobService.getOutput(cubingJob.getId()).getState() != ExecutableState.SUCCEED) {
+            throw new RuntimeException("The job '" + cubingJob.getId() + "' is failed.");
+        }
     }
 
     private void clearSegment(String cubeName) throws Exception {

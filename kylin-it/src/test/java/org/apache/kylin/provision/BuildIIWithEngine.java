@@ -18,8 +18,6 @@
 
 package org.apache.kylin.provision;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -167,7 +165,9 @@ public class BuildIIWithEngine {
     }
 
     private void assertJobSucceed(String jobId) {
-        assertEquals(ExecutableState.SUCCEED, jobService.getOutput(jobId).getState());
+        if (jobService.getOutput(jobId).getState() != ExecutableState.SUCCEED) {
+            throw new RuntimeException("The job '" + jobId + "' is failed.");
+        }
     }
 
     private class TestCallable implements Callable<List<String>> {

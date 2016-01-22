@@ -96,7 +96,10 @@ public class BuildIIWithStream {
         BuildIIWithStream buildCubeWithEngine = new BuildIIWithStream();
         buildCubeWithEngine.before();
         buildCubeWithEngine.build();
+        logger.info("Build is done");
         afterClass();
+        logger.info("Going to exit");
+        System.exit(0);
     }
 
     public static void beforeClass() throws Exception {

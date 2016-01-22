@@ -54,7 +54,11 @@ public class BuildCubeWithStream {
         BuildCubeWithStream buildCubeWithStream = new BuildCubeWithStream();
         buildCubeWithStream.before();
         buildCubeWithStream.build();
+        logger.info("Build is done");
         afterClass();
+        logger.info("Going to exit");
+        System.exit(0);
+        
     }
 
     public static void beforeClass() throws Exception {

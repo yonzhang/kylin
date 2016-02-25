@@ -6,15 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.apache.kylin.query.schema;
 
@@ -43,6 +43,7 @@ import org.apache.calcite.schema.impl.AbstractTableQueryable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.kylin.metadata.datatype.DataType;
 import org.apache.kylin.metadata.model.ColumnDesc;
 import org.apache.kylin.metadata.model.FunctionDesc;
 import org.apache.kylin.metadata.model.MeasureDesc;
@@ -128,20 +129,20 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
     private RelDataType deriveRowType(RelDataTypeFactory typeFactory) {
         RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
         for (ColumnDesc column : exposedColumns) {
-            RelDataType sqlType = createSqlType(typeFactory, column);
+            RelDataType sqlType = createSqlType(typeFactory, column.getType(), column.isNullable());
             sqlType = SqlTypeUtil.addCharsetAndCollation(sqlType, typeFactory);
             fieldInfo.add(column.getName(), sqlType);
         }
         return typeFactory.createStructType(fieldInfo);
     }
 
-    private RelDataType createSqlType(RelDataTypeFactory typeFactory, ColumnDesc column) {
-        SqlTypeName sqlTypeName = SQLTYPE_MAPPING.get(column.getTypeName());
+    public static RelDataType createSqlType(RelDataTypeFactory typeFactory, DataType dataType, boolean isNullable) {
+        SqlTypeName sqlTypeName = SQLTYPE_MAPPING.get(dataType.getName());
         if (sqlTypeName == null)
-            throw new IllegalArgumentException("Unrecognized column type " + column.getTypeName() + " from " + column);
+            throw new IllegalArgumentException("Unrecognized data type " + dataType);
 
-        int precision = column.getTypePrecision();
-        int scale = column.getTypeScale();
+        int precision = dataType.getPrecision();
+        int scale = dataType.getScale();
 
         RelDataType result;
         if (precision >= 0 && scale >= 0)
@@ -152,7 +153,7 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
             result = typeFactory.createSqlType(sqlTypeName);
 
         // due to left join and uncertain data quality, dimension value can be null
-        if (column.isNullable()) {
+        if (isNullable) {
             result = typeFactory.createTypeWithNullability(result, true);
         } else {
             result = typeFactory.createTypeWithNullability(result, false);
@@ -160,21 +161,25 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
 
         return result;
     }
-
+    
     private List<ColumnDesc> listSourceColumns() {
         ProjectManager mgr = ProjectManager.getInstance(olapSchema.getConfig());
         List<ColumnDesc> tableColumns = Lists.newArrayList(mgr.listExposedColumns(olapSchema.getProjectName(), sourceTable.getIdentity()));
 
-        List<ColumnDesc> metricColumns = Lists.newArrayList();
-        List<MeasureDesc> countMeasures = mgr.listEffectiveRewriteMeasures(olapSchema.getProjectName(), sourceTable.getIdentity());
+        List<MeasureDesc> countMeasures = mgr.listEffectiveMeasures(olapSchema.getProjectName(), sourceTable.getIdentity(), true);
         HashSet<String> metFields = new HashSet<String>();
+        List<ColumnDesc> metricColumns = Lists.newArrayList();
         for (MeasureDesc m : countMeasures) {
-
             FunctionDesc func = m.getFunction();
             String fieldName = func.getRewriteFieldName();
             if (!metFields.contains(fieldName)) {
                 metFields.add(fieldName);
-                ColumnDesc fakeCountCol = func.newFakeRewriteColumn(sourceTable);
+                ColumnDesc fakeCountCol = new ColumnDesc();
+                fakeCountCol.setName(fieldName);
+                fakeCountCol.setDatatype(func.getRewriteFieldType().toString());
+                if (func.isCount())
+                    fakeCountCol.setNullable(false);
+                fakeCountCol.init(sourceTable);
                 metricColumns.add(fakeCountCol);
             }
         }
@@ -182,11 +187,11 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
         //if exist sum(x), where x is integer/short/byte
         //to avoid overflow we upgrade x's type to long
         HashSet<ColumnDesc> updateColumns = Sets.newHashSet();
-        for (MeasureDesc m : mgr.listEffectiveMeasures(olapSchema.getProjectName(), sourceTable.getIdentity())) {
+        for (MeasureDesc m : mgr.listEffectiveMeasures(olapSchema.getProjectName(), sourceTable.getIdentity(), false)) {
             if (m.getFunction().isSum()) {
                 FunctionDesc func = m.getFunction();
-                if (func.getReturnDataType() != func.getRewriteFieldType() && //
-                        func.getReturnDataType().isBigInt() && //
+                if (//func.getReturnDataType() != func.getRewriteFieldType() && //
+                func.getReturnDataType().isBigInt() && //
                         func.getRewriteFieldType().isIntegerFamily()) {
                     updateColumns.add(func.getParameter().getColRefs().get(0).getColumnDesc());
                 }
@@ -220,7 +225,7 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
         return new AbstractTableQueryable<T>(queryProvider, schema, this, tableName) {
             @SuppressWarnings("unchecked")
             public Enumerator<T> enumerator() {
-                final OLAPQuery query = new OLAPQuery(EnumeratorTypeEnum.OLAP, 0);
+                final OLAPQuery query = new OLAPQuery(EnumeratorTypeEnum.INDEX, 0);
                 return (Enumerator<T>) query.enumerator();
             }
         };
@@ -237,8 +242,8 @@ public class OLAPTable extends AbstractQueryableTable implements TranslatableTab
         return "OLAPTable {" + getTableName() + "}";
     }
 
-    public Enumerable<Object[]> executeOLAPQuery(DataContext optiqContext, int ctxSeq) {
-        return new OLAPQuery(optiqContext, EnumeratorTypeEnum.OLAP, ctxSeq);
+    public Enumerable<Object[]> executeIndexQuery(DataContext optiqContext, int ctxSeq) {
+        return new OLAPQuery(optiqContext, EnumeratorTypeEnum.INDEX, ctxSeq);
     }
 
     public Enumerable<Object[]> executeLookupTableQuery(DataContext optiqContext, int ctxSeq) {

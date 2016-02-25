@@ -6,15 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.apache.kylin.query.relnode;
 
@@ -43,8 +43,10 @@ import org.apache.calcite.plan.RelTrait;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory.FieldInfoBuilder;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -73,8 +75,8 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
 
     public OLAPJoinRel(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right, //
             RexNode condition, ImmutableIntList leftKeys, ImmutableIntList rightKeys, //
-            JoinRelType joinType, Set<String> variablesStopped) throws InvalidRelException {
-        super(cluster, traits, left, right, condition, leftKeys, rightKeys, joinType, variablesStopped);
+            Set<CorrelationId> variablesSet, JoinRelType joinType) throws InvalidRelException {
+        super(cluster, traits, left, right, condition, leftKeys, rightKeys, variablesSet, joinType);
         Preconditions.checkArgument(getConvention() == OLAPRel.CONVENTION);
         this.rowType = getRowType();
         this.isTopJoin = false;
@@ -87,7 +89,7 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
         final JoinInfo joinInfo = JoinInfo.of(left, right, condition);
         assert joinInfo.isEqui();
         try {
-            return new OLAPJoinRel(getCluster(), traitSet, left, right, condition, joinInfo.leftKeys, joinInfo.rightKeys, joinType, variablesStopped);
+            return new OLAPJoinRel(getCluster(), traitSet, left, right, condition, joinInfo.leftKeys, joinInfo.rightKeys, variablesSet, joinType);
         } catch (InvalidRelException e) {
             // Semantic error not possible. Must be a bug. Convert to internal error.
             throw new AssertionError(e);
@@ -95,13 +97,13 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
     }
 
     @Override
-    public RelOptCost computeSelfCost(RelOptPlanner planner) {
-        return super.computeSelfCost(planner).multiplyBy(.05);
+    public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+        return super.computeSelfCost(planner, mq).multiplyBy(.05);
     }
 
     @Override
-    public double getRows() {
-        return super.getRows() * 0.1;
+    public double estimateRowCount(RelMetadataQuery mq) {
+        return super.estimateRowCount(mq) * 0.1;
     }
 
     @Override
@@ -115,7 +117,8 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
         this.isTopJoin = !this.context.hasJoin;
         this.context.hasJoin = true;
 
-        // as we keep the first table as fact table, we need to visit from left to right
+        // as we keep the first table as fact table, we need to visit from left
+        // to right
         implementor.visitChild(this.left, this);
         if (this.context != implementor.getContext() || ((OLAPRel) this.left).hasSubQuery()) {
             this.hasSubQuery = true;
@@ -134,6 +137,8 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
 
         if (!this.hasSubQuery) {
             this.context.allColumns.clear();
+            this.context.olapRowType = getRowType();
+            buildAliasMap();
 
             // build JoinDesc
             RexCall condition = (RexCall) this.getCondition();
@@ -214,6 +219,16 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
         }
     }
 
+    private void buildAliasMap() {
+        int size = this.rowType.getFieldList().size();
+
+        for (int i = 0; i < size; i++) {
+            RelDataTypeField field = this.rowType.getFieldList().get(i);
+            TblColRef column = this.columnRowType.getColumnByIndex(i);
+            context.storageContext.addAlias(column, field.getName());
+        }
+    }
+
     // workaround that EnumerableJoin constructor is protected
     private static Constructor<EnumerableJoin> constr;
     static {
@@ -225,8 +240,8 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
                     RexNode.class, //
                     ImmutableIntList.class, //
                     ImmutableIntList.class, //
-                    JoinRelType.class, //
-                    Set.class);
+                    Set.class, //
+                    JoinRelType.class);
             constr.setAccessible(true);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -238,7 +253,7 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
         if (this.hasSubQuery) {
             try {
                 return constr.newInstance(getCluster(), getCluster().traitSetOf(EnumerableConvention.INSTANCE), //
-                        inputs.get(0), inputs.get(1), condition, leftKeys, rightKeys, joinType, variablesStopped);
+                        inputs.get(0), inputs.get(1), condition, leftKeys, rightKeys, variablesSet, joinType);
             } catch (Exception e) {
                 throw new IllegalStateException("Can't create EnumerableJoin!", e);
             }
@@ -249,12 +264,9 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
 
     @Override
     public Result implement(EnumerableRelImplementor implementor, Prefer pref) {
-
-        context.setReturnTupleInfo(rowType, columnRowType);
-
         PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), getRowType(), pref.preferArray());
         RelOptTable factTable = context.firstTableScan.getTable();
-        MethodCallExpression exprCall = Expressions.call(factTable.getExpression(OLAPTable.class), "executeOLAPQuery", implementor.getRootExpression(), Expressions.constant(context.id));
+        MethodCallExpression exprCall = Expressions.call(factTable.getExpression(OLAPTable.class), "executeIndexQuery", implementor.getRootExpression(), Expressions.constant(context.id));
         return implementor.result(physType, Blocks.toBlock(exprCall));
     }
 
@@ -269,7 +281,7 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
         implementor.visitChild(this, this.right);
 
         this.rowType = this.deriveRowType();
-
+        
         if (this.isTopJoin && RewriteImplementor.needRewrite(this.context)) {
             // find missed rewrite fields
             int paramIndex = this.rowType.getFieldList().size();
@@ -288,6 +300,7 @@ public class OLAPJoinRel extends EnumerableJoin implements OLAPRel {
             fieldInfo.addAll(this.rowType.getFieldList());
             fieldInfo.addAll(newFieldList);
             this.rowType = getCluster().getTypeFactory().createStructType(fieldInfo);
+            this.context.olapRowType = this.rowType;
 
             // rebuild columns
             this.columnRowType = this.buildColumnRowType();

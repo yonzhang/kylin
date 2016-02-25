@@ -6,15 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.apache.kylin.query.relnode;
 
@@ -40,14 +40,17 @@ import org.apache.calcite.plan.volcano.AbstractConverter.ExpandConversionRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.AggregateExpandDistinctAggregatesRule;
 import org.apache.calcite.rel.rules.AggregateJoinTransposeRule;
 import org.apache.calcite.rel.rules.AggregateProjectMergeRule;
 import org.apache.calcite.rel.rules.FilterJoinRule;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.rules.JoinCommuteRule;
+import org.apache.calcite.rel.rules.JoinPushExpressionsRule;
 import org.apache.calcite.rel.rules.JoinPushThroughJoinRule;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
+import org.apache.calcite.rel.rules.SortJoinTransposeRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -147,6 +150,8 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
         planner.removeRule(AggregateJoinTransposeRule.INSTANCE);
         planner.removeRule(AggregateProjectMergeRule.INSTANCE);
         planner.removeRule(FilterProjectTransposeRule.INSTANCE);
+        planner.removeRule(SortJoinTransposeRule.INSTANCE);
+        planner.removeRule(JoinPushExpressionsRule.INSTANCE);
         // distinct count will be split into a separated query that is joined with the left query
         planner.removeRule(AggregateExpandDistinctAggregatesRule.INSTANCE);
 
@@ -165,8 +170,8 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
     }
 
     @Override
-    public RelOptCost computeSelfCost(RelOptPlanner planner) {
-        return super.computeSelfCost(planner).multiplyBy(.05);
+    public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+        return super.computeSelfCost(planner, mq).multiplyBy(.05);
     }
 
     @Override
@@ -192,6 +197,8 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
         if (context.firstTableScan == null) {
             context.firstTableScan = this;
         }
+
+        context.olapRowType = rowType;
     }
 
     private ColumnRowType buildColumnRowType() {
@@ -210,11 +217,10 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
 
     @Override
     public Result implement(EnumerableRelImplementor implementor, Prefer pref) {
+        PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), this.rowType, pref.preferArray());
 
-        context.setReturnTupleInfo(rowType, columnRowType);
         String execFunction = genExecFunc();
 
-        PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), this.rowType, pref.preferArray());
         MethodCallExpression exprCall = Expressions.call(table.getExpression(OLAPTable.class), execFunction, implementor.getRootExpression(), Expressions.constant(context.id));
         return implementor.result(physType, Blocks.toBlock(exprCall));
     }
@@ -224,7 +230,7 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
         if (context.hasJoin == false && tableName.equalsIgnoreCase(context.realization.getFactTable()) == false) {
             return "executeLookupTableQuery";
         } else {
-            return "executeOLAPQuery";
+            return "executeIndexQuery";
         }
 
     }

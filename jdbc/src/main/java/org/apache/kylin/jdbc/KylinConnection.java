@@ -6,15 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.apache.kylin.jdbc;
 
@@ -82,11 +82,6 @@ public class KylinConnection extends AvaticaConnection {
         return info;
     }
 
-    @Override
-    public AvaticaStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-    }
-
     public boolean getAutoCommit() throws SQLException {
         if (meta.connectionSync(handle, new ConnectionPropertiesImpl()).isAutoCommit() == null)
             setAutoCommit(true);
@@ -97,6 +92,11 @@ public class KylinConnection extends AvaticaConnection {
         if (meta.connectionSync(handle, new ConnectionPropertiesImpl()).isReadOnly() == null)
             setReadOnly(true);
         return super.isReadOnly();
+    }
+
+    @Override
+    public AvaticaStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class KylinConnection extends AvaticaConnection {
         ArrayList<ColumnMetaData> columns = new ArrayList<ColumnMetaData>();
         Map<String, Object> internalParams = Collections.<String, Object> emptyMap();
 
-        return new Meta.Signature(columns, sql, params, internalParams, CursorFactory.ARRAY);
+        return new Meta.Signature(columns, sql, params, internalParams, CursorFactory.ARRAY, Meta.StatementType.SELECT);
     }
 
     private KylinJdbcFactory factory() {
